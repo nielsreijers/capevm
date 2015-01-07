@@ -215,7 +215,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         SPMCSR = new SPMCSR_reg();
         mainClock = bi.getMainClock();
         this.pagesize = pagesize;
-        this.addressMask = Arithmetic.getBitRangeMask(1, pagesize + 1);
+        this.addressMask = Arithmetic.getBitRangeMask(0, pagesize);
         resetBuffer();
         MCUProperties props = bi.getSimulator().getMicrocontroller().getProperties();
         bi.installIOReg(props.getIOReg("SPMCSR"), SPMCSR);
