@@ -16,7 +16,10 @@ CFLAGS       = -source 1.7 -d $(BIN_DIR)
 C6FLAGS      = -source 1.6 -target 1.6 -d $(BIN_DIR)
 DOCFLAGS     = -breakiterator -sourcepath $(SRC_DIR) -d $(DOC_DIR)
 
-all: avrora
+all: jar
+
+jar: avrora
+	CLASSPATH=./bin ./makejar.bash
 
 avrora:
 	@$(JAVAC) $(CFLAGS) $(CCK_SRC) $(AVRORA_SRC)
