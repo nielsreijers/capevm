@@ -158,6 +158,10 @@ public class CallMonitor extends MonitorFactory {
         }
 
         public void fireBeforeCall(long time, int pc, int target) {
+            if (target-pc == 2) {
+                // avr-gcc uses "RCALL .+0" to reserve two bytes on the stack, but it's not really a call that we will ever RET from.
+                return;
+            }
             push(pc, Terminal.COLOR_BROWN, "CALL", -1, target);
             stack.fireBeforeCall(time, pc, target);
         }

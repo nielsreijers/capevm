@@ -73,25 +73,25 @@ static AVRORA_PRINT_INLINE void avroraPrintSetVarType(uint8_t a)
 {
 	debugbuf1[0] = a;
 }
-static AVRORA_PRINT_INLINE void printChar(char c)
+static AVRORA_PRINT_INLINE void avroraPrintChar(char c)
 {
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;
 	avroraPrintSetVarType(2);
 }
-static AVRORA_PRINT_INLINE void printInt8(char c)
+static AVRORA_PRINT_INLINE void avroraPrintInt8(char c)
 {
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;
 	avroraPrintSetVarType(3);
 }
-static AVRORA_PRINT_INLINE void printInt16(int16_t i)
+static AVRORA_PRINT_INLINE void avroraPrintInt16(int16_t i)
 {
 	debugbuf1[1] = (uint8_t)((uint16_t) i) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
 	avroraPrintSetVarType(3);
 }
-static AVRORA_PRINT_INLINE void printInt32(int32_t i)
+static AVRORA_PRINT_INLINE void avroraPrintInt32(int32_t i)
 {
 	debugbuf1[1] = (uint8_t)((uint32_t) i) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint32_t) i >> 8) & 0x00ff;
@@ -99,13 +99,13 @@ static AVRORA_PRINT_INLINE void printInt32(int32_t i)
 	debugbuf1[4] = (uint8_t)((uint32_t) i >> 24) & 0x00ff;
 	avroraPrintSetVarType(5);
 }
-static AVRORA_PRINT_INLINE void printStr(const char * const s)
+static AVRORA_PRINT_INLINE void avroraPrintStr(const char * const s)
 {
 	debugbuf1[1] = (uint8_t)((uint16_t) s) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint16_t) s >> 8) & 0x00ff;
 	avroraPrintSetVarType(6);
 }
-static AVRORA_PRINT_INLINE void printHexBuf(const uint8_t *b, uint16_t len)
+static AVRORA_PRINT_INLINE void avroraPrintHexBuf(const uint8_t *b, uint16_t len)
 {
 	debugbuf1[1] = (uint8_t)((uint16_t) b) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint16_t) b >> 8) & 0x00ff;
@@ -113,19 +113,19 @@ static AVRORA_PRINT_INLINE void printHexBuf(const uint8_t *b, uint16_t len)
 	debugbuf1[4] = (uint8_t)((uint16_t) len >> 8) & 0x00ff;
 	avroraPrintSetVarType(7);
 }
-static AVRORA_PRINT_INLINE void printHex8(uint8_t c)
+static AVRORA_PRINT_INLINE void avroraPrintHex8(uint8_t c)
 {
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;
 	avroraPrintSetVarType(1);
 }
-static AVRORA_PRINT_INLINE void printHex16(uint16_t i)
+static AVRORA_PRINT_INLINE void avroraPrintHex16(uint16_t i)
 {
 	debugbuf1[1] = i & 0x00ff;
 	debugbuf1[2] = (i >> 8) & 0x00ff;
 	avroraPrintSetVarType(1);
 }
-static AVRORA_PRINT_INLINE void printHex32(uint32_t i)
+static AVRORA_PRINT_INLINE void avroraPrintHex32(uint32_t i)
 {
 	debugbuf1[1] = (uint8_t)((uint32_t) i) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint32_t) i >> 8) & 0x00ff;
