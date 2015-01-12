@@ -34,6 +34,9 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.sim.util.MemTimer;
+import avrora.core.SourceMapping;
+import cck.util.Util;
+import cck.util.Option;
 
 /**
  * The <code>TimerMonitor</code> gives apps access to a simple
@@ -43,13 +46,29 @@ import avrora.sim.util.MemTimer;
  */
 public class TimerMonitor extends MonitorFactory {
 
+    protected final Option.Str VARIABLENAME = newOption("ctimerVariableName", "ctimerWatch" ,
+            "This option specifies the name of the variable marking the base address of " +
+            "the memory region to watch.");
+
     public class Monitor implements avrora.monitors.Monitor {
         public final MemTimer memprofile;
-        private static final int BASE = 2999;
 
         Monitor(Simulator s) {
-            memprofile = new MemTimer(BASE);
-            s.insertWatch(memprofile, BASE);
+            int base = -1;
+
+            // Look for the label that equals the desired variable name inside the map file.
+            final SourceMapping map = s.getProgram().getSourceMapping();
+            final SourceMapping.Location location = map.getLocation(VARIABLENAME.get());
+            if (location != null) {
+                // Strip any memory-region markers from the address.
+                base = location.vma_addr & 0xffff;
+            } else {
+                Util.userError("c-timer monitor could not find variable \"" +
+                        VARIABLENAME.get() + "\"");
+            }
+
+            memprofile = new MemTimer(base);
+            s.insertWatch(memprofile, base);
         }
 
         public void report() {

@@ -65,6 +65,8 @@ public class MemTimer extends Simulator.Watch.Empty {
                     Terminal.nextln();
                 } else {
                     start_time = state.getCycles();
+                    Terminal.printRed("timer: start");
+                    Terminal.nextln();
                 }
                 timer_state = 1;
                 break;
@@ -81,7 +83,7 @@ public class MemTimer extends Simulator.Watch.Empty {
                 timer_state = 0;
                 break;
             default:
-                Terminal.printRed("Unexpected command to timer!");
+                Terminal.printRed("Unexpected command to timer! " + value);
                 Terminal.nextln();
         }
     }
