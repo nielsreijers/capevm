@@ -54,12 +54,12 @@ public class CodeSegment extends Segment {
      * @param address the address in the code segment of the instruction
      * @param i the new instruction to place at this location in the flash
      */
-    protected void replaceInstr(int address, LegacyInstr i) {
-        LegacyInstr instr = getInstr(address);
-        if ( instr == null || !(instr instanceof ProbedLegacyInstr) ) {
-            writeInstr(address, i);
+    protected void replaceInstr(int address, LegacyInstr newInstr) {
+        LegacyInstr oldInstr = getInstr(address);
+        if ( oldInstr == null || !(oldInstr instanceof ProbedLegacyInstr) ) {
+            writeInstr(address, newInstr);
         } else {
-            ProbedLegacyInstr pi = new ProbedLegacyInstr(i, (ProbedLegacyInstr)instr);
+            ProbedLegacyInstr pi = new ProbedLegacyInstr(newInstr, (ProbedLegacyInstr)oldInstr);
             writeInstr(address, pi);
         }
     }
@@ -253,14 +253,18 @@ public class CodeSegment extends Segment {
         protected final MulticastProbe probe;
 
         public ProbedLegacyInstr(LegacyInstr i, int a) {
-            super(new LegacyInstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
+            super(i.properties != null
+                    ? new LegacyInstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0)
+                    : null);
             instr = i;
             address = a;
             probe = new MulticastProbe();
         }
 
         public ProbedLegacyInstr(LegacyInstr i, ProbedLegacyInstr prev) {
-            super(new LegacyInstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
+            super(i.properties != null
+                    ? new LegacyInstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0)
+                    : null);
             instr = i;
             address = prev.address;
             probe = prev.probe;
