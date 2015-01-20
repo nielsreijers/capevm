@@ -118,6 +118,7 @@ public class Defaults {
             monitorMap.addClass("real-time", RealTimeMonitor.class);
             monitorMap.addClass("sniffer", SnifferMonitor.class);
             monitorMap.addClass("retaddr", RetAddrWatch.class);
+            monitorMap.addClass("rtc", RTCMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             hc.addOptionValueSection("SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
