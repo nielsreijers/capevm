@@ -133,5 +133,10 @@ static AVRORA_PRINT_INLINE void avroraPrintHex32(uint32_t i)
 	debugbuf1[4] = (uint8_t)((uint32_t) i >> 24) & 0x00ff;
 	avroraPrintSetVarType(4);
 }
-
+static AVRORA_PRINT_INLINE void avroraPrintPtr(void * i)
+{
+	debugbuf1[1] = (uint8_t)((uint16_t) i) & 0x00ff;
+	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
+	avroraPrintSetVarType(1);
+}
 #endif
