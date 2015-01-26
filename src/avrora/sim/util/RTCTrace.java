@@ -1,7 +1,9 @@
 package avrora.sim.util;
 
+import java.util.ArrayList; 
 import avrora.sim.*;
 import avrora.arch.AbstractInstr;
+import avrora.arch.legacy.LegacyInstr;
 import avrora.arch.legacy.LegacyDisassembler;
 import cck.text.Terminal;
 
@@ -331,11 +333,49 @@ public class RTCTrace extends Simulator.Watch.Empty {
     }
 
     private void addFunctionDisassembly(State state, int functionStartAddress, int functionEndAddress, StringBuffer buf) {
+    	ArrayList<Integer> branchTable = new ArrayList<Integer>();
+
+    	// Scan branch target addresses
     	int address = functionStartAddress;
+    	int i = 0;
 		while (address < functionEndAddress) {
 			AbstractInstr instr = state.getInstr(address);
-			buf.append("RTCTrace: (AVR) 0x" + Integer.toHexString(address) + "               " + instr + "\n\r");
+
+			if (instr instanceof LegacyInstr.RJMP) {
+				int operand = ((LegacyInstr.RJMP)instr).imm1;
+				Integer targetAddress = address + 2*(1+operand);
+				buf.append("RTCTrace: (AVR) 0x" + Integer.toHexString(address) + "   BRTARGET " + i++ + " at 0x" + Integer.toHexString(targetAddress) + "\n\r");
+				branchTable.add(targetAddress);
+			} else {
+				// End of branch target table
+				break;
+			}
 			address += instr.getSize();
-    	}
+		}
+
+		// Print compiled method, and add branch target annotations where necessary.
+		while (address < functionEndAddress) {
+			AbstractInstr instr = state.getInstr(address);
+
+			String branchTargetString;
+			int branchTarget = branchTable.indexOf(address);
+			if (branchTarget == -1) {
+				branchTargetString = "       ";
+			} else {
+				// this is a branch target
+				branchTargetString = " (BT:" + branchTarget + ")";
+			}
+
+			buf.append("RTCTrace: (AVR) 0x" + Integer.toHexString(address) + branchTargetString + "       " + instr);
+			if (instr instanceof LegacyInstr.RJMP) {
+				// Resolve branch target
+				int operand = ((LegacyInstr.RJMP)instr).imm1;
+				Integer targetAddress = address + 2*(1+operand);
+				branchTarget = (targetAddress - functionStartAddress)/2;
+				buf.append("   (BT:" + branchTarget + " @ " + Integer.toHexString(branchTable.get(branchTarget)) + ")");
+			}
+			buf.append("\n\r");
+			address += instr.getSize();
+		}
     }
 }
