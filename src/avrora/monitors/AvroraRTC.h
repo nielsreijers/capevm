@@ -2,13 +2,15 @@
 #define _AVRORARTCTRACE_H_
 
 #include <stdarg.h>
+#include <avr/pgmspace.h>
+
 #ifdef __GNUC__
 # define AVRORA_PRINT_INLINE __inline__
 #else
 /* Try the C99 keyword instead. */
 # define AVRORA_PRINT_INLINE inline
 #endif
-volatile uint8_t rtcMonitorVariable[6];
+volatile uint8_t rtcMonitorVariable[7];
 
 #define AVRORA_RTC_SINGLEWORDINSTRUCTION 1;
 #define AVRORA_RTC_DOUBLEWORDINSTRUCTION 2;
@@ -36,15 +38,20 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStartMethod(uint8_t method_impl_id
 	rtcMonitorVariable[0] = AVRORA_RTC_STARTMETHOD;
 }
 
-static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address)
+static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address, uint16_t jvmmethodsize)
 {
 	*((uint32_t *)(rtcMonitorVariable+1)) = address;
+	*((uint16_t *)(rtcMonitorVariable+5)) = jvmmethodsize;	
 	rtcMonitorVariable[0] = AVRORA_RTC_ENDMETHOD;
 }
 
-static AVRORA_PRINT_INLINE void avroraRTCTraceJavaOpcode(uint8_t opcode)
+static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmem(unsigned int pointer)
 {
-	rtcMonitorVariable[1] = opcode;
+	rtcMonitorVariable[1] = pgm_read_byte_far(pointer + 0);
+	rtcMonitorVariable[2] = pgm_read_byte_far(pointer + 1);
+	rtcMonitorVariable[3] = pgm_read_byte_far(pointer + 2);
+	rtcMonitorVariable[4] = pgm_read_byte_far(pointer + 3);
+	rtcMonitorVariable[5] = pgm_read_byte_far(pointer + 4);
 	rtcMonitorVariable[0] = AVRORA_RTC_JAVAOPCODE;
 }
 
