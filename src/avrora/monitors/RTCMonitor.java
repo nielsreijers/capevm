@@ -44,7 +44,7 @@ public class RTCMonitor extends MonitorFactory {
                     // Strip any memory-region markers from the address.
                     base = location.vma_addr & 0xffff;
                 } else {
-                    Util.userError("c-print monitor could not find variable \"" +
+                    Util.userError("rtc monitor could not find variable \"" +
                             VARIABLENAME.get() + "\"");
                 }
             }

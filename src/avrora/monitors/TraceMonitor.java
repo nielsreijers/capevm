@@ -58,6 +58,10 @@ public class TraceMonitor extends MonitorFactory {
             "The \"trace-start\" option specifies the time to start the instruction trace, in " +
             "clock cycles. This option can be useful for diagnosing problems in long simulations " +
             "that happens after a given time is reached.");
+    final Option.Bool TRACEONLYWHENENABLED = newOption("trace-only-when-enabled", false,
+            "If trace-only-when-enabled is set, tracing only happens after avroraTraceEnable() is called," +
+            "and until avroraTraceDisable() is called. These can be included from AvroraTrace.h.");
+    final String TRACEENABLEDVARIABLE = "avroraTraceEnabledVariable";
 
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
@@ -73,12 +77,15 @@ public class TraceMonitor extends MonitorFactory {
         int nesting;
 
         public class GlobalProbe implements Simulator.Probe {
+            public boolean enabled = true;
             public void fireBefore(State s, int addr) {
-                print(s, s.getInstr(addr));
+                if (enabled)
+                    print(s, s.getInstr(addr));
             }
 
             public void fireAfter(State s, int addr) {
-                count++;
+                if (enabled)
+                    count++;
             }
         }
 
@@ -134,6 +141,28 @@ public class TraceMonitor extends MonitorFactory {
             }
         }
 
+        public class EnableTrace extends Simulator.Watch.Empty {
+            private GlobalProbe probe;
+            EnableTrace(GlobalProbe probe) {
+                this.probe = probe;
+            }
+
+            /**
+             * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
+             *
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value being written to the memory location
+             */
+            public void fireBeforeWrite(State state, int data_addr, byte value) {
+                if ( value ==  0 ) {
+                    probe.enabled = false;
+                } else {
+                    probe.enabled = true;
+                }
+            }
+        }
+
         int nextpc;
 
         private void print(State s, AbstractInstr i) {
@@ -168,6 +197,20 @@ public class TraceMonitor extends MonitorFactory {
             } else {
                 // if there are from/to pairs, insert the start and end probes
                 addPairs();
+            }
+            boolean onlywhenenabled = TRACEONLYWHENENABLED.get();
+            if ( onlywhenenabled ) {
+                final SourceMapping map = s.getProgram().getSourceMapping();
+                final SourceMapping.Location location = map.getLocation(TRACEENABLEDVARIABLE);
+                if (location != null) {
+                    // Strip any memory-region markers from the address.
+                    int base = location.vma_addr & 0xffff;
+                    EnableTrace enabletrace = new EnableTrace(PROBE);
+                    s.insertWatch(enabletrace, base);                    
+                } else {
+                    Util.userError("rtc monitor could not find variable \"" +
+                            TRACEENABLEDVARIABLE + "\"");
+                }                
             }
         }
 
