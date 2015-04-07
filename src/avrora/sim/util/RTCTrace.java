@@ -334,7 +334,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			}
 			break;
 			default:
-				buf.append("RTCTrace: unknown command " + value);
+				buf.append("RTCTrace: unknown command " + value + "\n\r");
 			break;
 		}
 

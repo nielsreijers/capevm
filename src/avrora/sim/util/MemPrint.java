@@ -51,6 +51,17 @@ public class MemPrint extends Simulator.Watch.Empty {
     int max;
     String log;
 
+    final byte AVRORA_PRINT_STRINGS                    = 0x2;
+    final byte AVRORA_PRINT_2BYTE_HEXADECIMALS         = 0x1;
+    final byte AVRORA_PRINT_2BYTE_UNSIGNED_INTEGERS    = 0x3;
+    final byte AVRORA_PRINT_2BYTE_SIGNED_INTEGERS      = 0x8;
+    final byte AVRORA_PRINT_4BYTE_HEXADECIMALS         = 0x4;
+    final byte AVRORA_PRINT_4BYTE_UNSIGNED_INTEGERS    = 0x5;
+    final byte AVRORA_PRINT_4BYTE_SIGNED_INTEGERS      = 0x9;
+    final byte AVRORA_PRINT_STRING_POINTERS            = 0x6;
+    final byte AVRORA_PRINT_BINARY_HEX_DUMPS           = 0x7;
+
+
     public MemPrint(int b, int m, String l) {
         base = b;
         max = m;
@@ -70,6 +81,13 @@ public class MemPrint extends Simulator.Watch.Empty {
         final int h = a.getDataByte(offset + 1);
         return ((h & 0xff) << 8) + (l & 0xff);
     }
+    static private long getInt32(AtmelInterpreter a, int offset) {
+        final long l = a.getDataByte(offset);
+        final long h1 = a.getDataByte(offset + 1);
+        final long h2 = a.getDataByte(offset + 2);
+        final long h3 = a.getDataByte(offset + 3);
+        return ((h3 & 0xff) << 24) + ((h2 & 0xff) << 16) + ((h1 & 0xff) << 8) + (l & 0xff);
+    }
 
     public void fireBeforeWrite(State state, int data_addr, byte value) {
             if (data_addr != base) {
@@ -83,21 +101,53 @@ public class MemPrint extends Simulator.Watch.Empty {
             SimUtil.getIDTimeString(buf, sim);
             boolean ret=false;//indicates that it is a return line
             switch (value) {
-                case 0x1://for 2byte hexadecimals
-                case 0x3://for 2byte integers
+                case AVRORA_PRINT_STRINGS:
+                default://for already formatted variables (i.e. TinyOS printf)
+                    for (int i = 0; i <= max; i++) {
+                        byte b = a.getDataByte(base + i + 1);
+                        if (b == 0) break;//break if end of string
+                        fil.append(String.valueOf((char) b));
+                        if (b != 10) buf.append(String.valueOf((char) b));//not return char
+                        else if (i == 0) ret = true;//return line
+                    }
+                    break;
+                case AVRORA_PRINT_2BYTE_HEXADECIMALS:
+                case AVRORA_PRINT_2BYTE_UNSIGNED_INTEGERS:
+                case AVRORA_PRINT_2BYTE_SIGNED_INTEGERS:
                     final int v = getInt16(a, base + 1);
-                    if (value == 0x1) {
+                    if (value == AVRORA_PRINT_2BYTE_HEXADECIMALS) {
                         fil.append(StringUtil.toHex(v, 4));
                         buf.append(StringUtil.toHex(v, 4));
                         break;
-                    }
-                    if (value == 0x3) {
+                    } else if (value == AVRORA_PRINT_2BYTE_UNSIGNED_INTEGERS) {
                         fil.append(v);
                         buf.append(v);
                         break;
+                    } else if (value == AVRORA_PRINT_2BYTE_SIGNED_INTEGERS) {
+                        fil.append((short)v);
+                        buf.append((short)v);
+                        break;
                     }
                     break;
-                case 0x6://for string pointers
+                case AVRORA_PRINT_4BYTE_HEXADECIMALS:
+                case AVRORA_PRINT_4BYTE_UNSIGNED_INTEGERS:
+                case AVRORA_PRINT_4BYTE_SIGNED_INTEGERS:
+                    final long r = getInt32(a, base + 1);
+                    if (value == AVRORA_PRINT_4BYTE_HEXADECIMALS) {
+                        fil.append(StringUtil.toHex(r, 8));
+                        buf.append(StringUtil.toHex(r, 8));
+                        break;
+                    } else if (value == AVRORA_PRINT_4BYTE_UNSIGNED_INTEGERS) {
+                        fil.append(r);
+                        buf.append(r);
+                        break;
+                    } else if (value == AVRORA_PRINT_4BYTE_SIGNED_INTEGERS) {
+                        fil.append((int)r);
+                        buf.append((int)r);
+                        break;
+                    }
+                    break;
+                case AVRORA_PRINT_STRING_POINTERS:
                     final int strAddr = getInt16(a, base + 1);
                     for (int i = 0; i <= max; i++) {
                         byte b = a.getDataByte(strAddr + i);
@@ -107,7 +157,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                         else if (i == 0) ret = true;//return line
                     }
                     break;
-                case 0x7://for binary hex dumps
+                case AVRORA_PRINT_BINARY_HEX_DUMPS:
                     final int bufAddr = getInt16(a, base + 1);
                     final int bufLen = getInt16(a, base + 3);
                     for (int i = 0; i < bufLen; i++) {
@@ -118,30 +168,6 @@ public class MemPrint extends Simulator.Watch.Empty {
                         }
                         fil.append(StringUtil.toHex(b, 2));
                         buf.append(StringUtil.toHex(b, 2));
-                    }
-                    break;
-                case 0x4://for 4byte hexadecimals
-                case 0x5://for 4byte integers
-                    long r = ((a.getDataByte(base + 4) & 0xff) <<24) + ((a.getDataByte(base + 3) & 0xff) <<16)+((a.getDataByte(base + 2) & 0xff) << 8) + (a.getDataByte(base + 1) & 0xff) & 0xffffffff;
-                    if (value == 0x4) {
-                        fil.append(StringUtil.toHex(r, 8));
-                        buf.append(StringUtil.toHex(r, 8));
-                        break;
-                    }
-                    if (value == 0x5) {
-                        fil.append(r);
-                        buf.append(r);
-                        break;
-                    }
-                    break;
-                case 0x2://for strings
-                default://for already formatted variables (i.e. TinyOS printf)
-                    for (int i = 0; i <= max; i++) {
-                        byte b = a.getDataByte(base + i + 1);
-                        if (b == 0) break;//break if end of string
-                        fil.append(String.valueOf((char) b));
-                        if (b != 10) buf.append(String.valueOf((char) b));//not return char
-                        else if (i == 0) ret = true;//return line
                     }
                     break;
             }

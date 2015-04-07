@@ -69,6 +69,17 @@
 #endif
 volatile uint8_t debugbuf1[5];
 
+
+#define AVRORA_PRINT_STRINGS  					0x2
+#define AVRORA_PRINT_2BYTE_HEXADECIMALS			0x1
+#define AVRORA_PRINT_2BYTE_UNSIGNED_INTEGERS 	0x3
+#define AVRORA_PRINT_2BYTE_SIGNED_INTEGERS 		0x8
+#define AVRORA_PRINT_4BYTE_HEXADECIMALS 		0x4
+#define AVRORA_PRINT_4BYTE_UNSIGNED_INTEGERS 	0x5
+#define AVRORA_PRINT_4BYTE_SIGNED_INTEGERS 		0x9
+#define AVRORA_PRINT_STRING_POINTERS 			0x6
+#define AVRORA_PRINT_BINARY_HEX_DUMPS 			0x7
+
 static AVRORA_PRINT_INLINE void avroraPrintSetVarType(uint8_t a)
 {
 	debugbuf1[0] = a;
@@ -77,19 +88,32 @@ static AVRORA_PRINT_INLINE void avroraPrintChar(char c)
 {
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;
-	avroraPrintSetVarType(2);
+	avroraPrintSetVarType(AVRORA_PRINT_STRINGS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintInt8(char c)
 {
+	int16_t i = (int16_t)c;
+	debugbuf1[1] = (uint8_t)((uint16_t) i) & 0x00ff;
+	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_SIGNED_INTEGERS);
+}
+static AVRORA_PRINT_INLINE void avroraPrintUInt8(char c)
+{
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;
-	avroraPrintSetVarType(3);
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_UNSIGNED_INTEGERS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintInt16(int16_t i)
 {
 	debugbuf1[1] = (uint8_t)((uint16_t) i) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
-	avroraPrintSetVarType(3);
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_SIGNED_INTEGERS);
+}
+static AVRORA_PRINT_INLINE void avroraPrintUInt16(int16_t i)
+{
+	debugbuf1[1] = (uint8_t)((uint16_t) i) & 0x00ff;
+	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_UNSIGNED_INTEGERS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintInt32(int32_t i)
 {
@@ -97,13 +121,21 @@ static AVRORA_PRINT_INLINE void avroraPrintInt32(int32_t i)
 	debugbuf1[2] = (uint8_t)((uint32_t) i >> 8) & 0x00ff;
 	debugbuf1[3] = (uint8_t)((uint32_t) i >> 16) & 0x00ff;
 	debugbuf1[4] = (uint8_t)((uint32_t) i >> 24) & 0x00ff;
-	avroraPrintSetVarType(5);
+	avroraPrintSetVarType(AVRORA_PRINT_4BYTE_SIGNED_INTEGERS);
+}
+static AVRORA_PRINT_INLINE void avroraPrintUInt32(int32_t i)
+{
+	debugbuf1[1] = (uint8_t)((uint32_t) i) & 0x00ff;
+	debugbuf1[2] = (uint8_t)((uint32_t) i >> 8) & 0x00ff;
+	debugbuf1[3] = (uint8_t)((uint32_t) i >> 16) & 0x00ff;
+	debugbuf1[4] = (uint8_t)((uint32_t) i >> 24) & 0x00ff;
+	avroraPrintSetVarType(AVRORA_PRINT_4BYTE_UNSIGNED_INTEGERS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintStr(const char * const s)
 {
 	debugbuf1[1] = (uint8_t)((uint16_t) s) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint16_t) s >> 8) & 0x00ff;
-	avroraPrintSetVarType(6);
+	avroraPrintSetVarType(AVRORA_PRINT_STRING_POINTERS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintHexBuf(const uint8_t *b, uint16_t len)
 {
@@ -111,19 +143,19 @@ static AVRORA_PRINT_INLINE void avroraPrintHexBuf(const uint8_t *b, uint16_t len
 	debugbuf1[2] = (uint8_t)((uint16_t) b >> 8) & 0x00ff;
 	debugbuf1[3] = (uint8_t)((uint16_t) len) & 0x00ff;
 	debugbuf1[4] = (uint8_t)((uint16_t) len >> 8) & 0x00ff;
-	avroraPrintSetVarType(7);
+	avroraPrintSetVarType(AVRORA_PRINT_BINARY_HEX_DUMPS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintHex8(uint8_t c)
 {
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;
-	avroraPrintSetVarType(1);
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_HEXADECIMALS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintHex16(uint16_t i)
 {
 	debugbuf1[1] = i & 0x00ff;
 	debugbuf1[2] = (i >> 8) & 0x00ff;
-	avroraPrintSetVarType(1);
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_HEXADECIMALS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintHex32(uint32_t i)
 {
@@ -131,12 +163,12 @@ static AVRORA_PRINT_INLINE void avroraPrintHex32(uint32_t i)
 	debugbuf1[2] = (uint8_t)((uint32_t) i >> 8) & 0x00ff;
 	debugbuf1[3] = (uint8_t)((uint32_t) i >> 16) & 0x00ff;
 	debugbuf1[4] = (uint8_t)((uint32_t) i >> 24) & 0x00ff;
-	avroraPrintSetVarType(4);
+	avroraPrintSetVarType(AVRORA_PRINT_4BYTE_HEXADECIMALS);
 }
 static AVRORA_PRINT_INLINE void avroraPrintPtr(void * i)
 {
 	debugbuf1[1] = (uint8_t)((uint16_t) i) & 0x00ff;
 	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
-	avroraPrintSetVarType(1);
+	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_HEXADECIMALS);
 }
 #endif
