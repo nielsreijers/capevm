@@ -50,6 +50,7 @@ public class MemPrint extends Simulator.Watch.Empty {
     int base;
     int max;
     String log;
+    StringBuilder charbuffer;
 
     final byte AVRORA_PRINT_STRINGS                    = 0x2;
     final byte AVRORA_PRINT_2BYTE_HEXADECIMALS         = 0x1;
@@ -60,12 +61,14 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_PRINT_4BYTE_SIGNED_INTEGERS      = 0x9;
     final byte AVRORA_PRINT_STRING_POINTERS            = 0x6;
     final byte AVRORA_PRINT_BINARY_HEX_DUMPS           = 0x7;
-
+    final byte AVRORA_WRITE_CHAR_BUFFER                = 0xA;
+    final byte AVRORA_PRINT_CHAR_BUFFER                = 0xB;
 
     public MemPrint(int b, int m, String l) {
         base = b;
         max = m;
         log = l;
+        charbuffer = new StringBuilder();
         //Open file first time without append mode
         if (!log.equals("")){
             try{
@@ -169,6 +172,15 @@ public class MemPrint extends Simulator.Watch.Empty {
                         fil.append(StringUtil.toHex(b, 2));
                         buf.append(StringUtil.toHex(b, 2));
                     }
+                    break;
+                case AVRORA_WRITE_CHAR_BUFFER:
+                    byte b = a.getDataByte(base + 1);
+                    charbuffer.append(String.valueOf((char) b));
+                    break;
+                case AVRORA_PRINT_CHAR_BUFFER:
+                    fil.append(charbuffer.toString());
+                    buf.append(charbuffer.toString());
+                    charbuffer = new StringBuilder();
                     break;
             }
 
