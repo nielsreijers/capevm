@@ -57,34 +57,36 @@ public class MemTimer extends Simulator.Watch.Empty {
             Terminal.printRed("Unexpected interception by printer!");
             System.exit(-1);
         }
-        
+
+        Simulator sim = state.getSimulator();
+        StringBuffer buf = new StringBuffer();
+        SimUtil.getIDTimeString(buf, sim);
+
         switch (value) {
             case 100:
                 if (timer_state != 0) {
-                    Terminal.printRed("timer: multiple starts in a row??");
-                    Terminal.nextln();
+                    buf.append("timer: multiple starts in a row??");
                 } else {
                     start_time = state.getCycles();
-                    Terminal.printRed("timer: start");
-                    Terminal.nextln();
+                    buf.append("timer: start");
                 }
                 timer_state = 1;
                 break;
             case 101:
                 if (timer_state != 1) {
-                    Terminal.printRed("timer: multiple stops in a row??");
-                    Terminal.nextln();
+                    buf.append("timer: multiple stops in a row??");
                 } else {
                     long stop_time = state.getCycles();
                     long duration = stop_time - start_time;
-                    Terminal.printRed("timer: " + String.valueOf(duration) + " cycles");
-                    Terminal.nextln();
+                    buf.append("timer: " + String.valueOf(duration) + " cycles");
                 }
                 timer_state = 0;
                 break;
             default:
-                Terminal.printRed("Unexpected command to timer! " + value);
-                Terminal.nextln();
+                buf.append("Unexpected command to timer! " + value);
+                break;
         }
+        Terminal.printRed(buf.toString());
+        Terminal.nextln();
     }
 }

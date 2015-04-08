@@ -284,6 +284,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		Simulator sim = state.getSimulator();
 		AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
         StringBuffer buf = new StringBuffer();
+        SimUtil.getIDTimeString(buf, sim);
 
 		switch (value) {
 			case AVRORA_RTC_SINGLEWORDINSTRUCTION: { // 1 word instruction at data_addr+1:data_addr+2
@@ -383,7 +384,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
 				int operand = ((LegacyInstr.RJMP)instr).imm1;
 				Integer targetAddress = address + 2*(1+operand);
 				branchTarget = (targetAddress - functionStartAddress)/2;
-				buf.append("   (BT:" + branchTarget + " @ " + Integer.toHexString(branchTable.get(branchTarget)) + ")");
+				if (branchTarget >= 0 && branchTarget < branchTable.size()) { // local branches, such as in sshr don't jump to the branch table
+					buf.append("   (BT:" + branchTarget + " @ " + Integer.toHexString(branchTable.get(branchTarget)) + ")");
+				}
 			}
 			buf.append("\n\r");
 			address += instr.getSize();
