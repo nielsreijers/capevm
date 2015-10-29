@@ -65,7 +65,9 @@ public class MemTimer extends Simulator.Watch.Empty {
         switch (value) {
             case 100:
                 if (timer_state != 0) {
-                    buf.append("timer: multiple starts in a row??");
+                    Terminal.printRed("timer: multiple starts in a row??");
+                    System.exit(-1);
+                    // buf.append("timer: multiple starts in a row??");
                 } else {
                     start_time = state.getCycles();
                     buf.append("timer: start");
