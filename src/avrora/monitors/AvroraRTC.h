@@ -10,7 +10,7 @@
 /* Try the C99 keyword instead. */
 # define AVRORA_PRINT_INLINE inline
 #endif
-volatile uint8_t rtcMonitorVariable[7];
+volatile uint8_t rtcMonitorVariable[8];
 
 #define AVRORA_RTC_SINGLEWORDINSTRUCTION 1;
 #define AVRORA_RTC_DOUBLEWORDINSTRUCTION 2;
@@ -38,10 +38,11 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStartMethod(uint8_t method_impl_id
 	rtcMonitorVariable[0] = AVRORA_RTC_STARTMETHOD;
 }
 
-static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address, uint16_t jvmmethodsize)
+static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address, uint16_t jvmmethodsize, uint8_t numberofbranchtargets)
 {
 	*((uint32_t *)(rtcMonitorVariable+1)) = address;
-	*((uint16_t *)(rtcMonitorVariable+5)) = jvmmethodsize;	
+	*((uint16_t *)(rtcMonitorVariable+5)) = jvmmethodsize;
+	*((uint8_t *)(rtcMonitorVariable+7)) = numberofbranchtargets;
 	rtcMonitorVariable[0] = AVRORA_RTC_ENDMETHOD;
 }
 

@@ -507,6 +507,7 @@ public class GDBServer extends MonitorFactory {
             }
 
             public void fireBeforeRead(State s, int address) {
+                System.out.println("GDB caught invalid read of " + segment + " at " + address);
                 if (printer != null) {
                     printer.println("GDB caught invalid read of " + segment + " at " + address);
                 }
@@ -516,6 +517,7 @@ public class GDBServer extends MonitorFactory {
             }
 
             public void fireBeforeWrite(State s, int address, byte val) {
+                System.out.println("GDB caught invalid write of " + segment + " at " + address);
                 if (printer != null) {
                     printer.println("GDB caught invalid write of " + segment + " at " + address);
                 }

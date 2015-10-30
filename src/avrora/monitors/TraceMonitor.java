@@ -156,8 +156,10 @@ public class TraceMonitor extends MonitorFactory {
              */
             public void fireBeforeWrite(State state, int data_addr, byte value) {
                 if ( value ==  0 ) {
+                    print("trace disabled --------------------------" + value);
                     probe.enabled = false;
                 } else {
+                    print("trace enabled ---------------------------" + value);
                     probe.enabled = true;
                 }
             }
@@ -169,6 +171,7 @@ public class TraceMonitor extends MonitorFactory {
             //"#k{%x}: #k{%s} %s", color, pc, color, i.getVariant(), i.getOperands()
 
             StringBuffer buf = printer.getBuffer(100);
+            buf.append("[avrora.trace] ");
             int pc = s.getPC();
             int color = pc == nextpc ? Terminal.COLOR_BLUE : Terminal.COLOR_CYAN;
             Terminal.append(color, buf, StringUtil.to0xHex(pc, 4));
@@ -179,7 +182,7 @@ public class TraceMonitor extends MonitorFactory {
         }
 
         private void print(String s) {
-            printer.println(s);
+            printer.println("[avrora.trace]" + s);
         }
 
         Mon(Simulator s) {

@@ -102,6 +102,7 @@ public class MemPrint extends Simulator.Watch.Empty {
             StringBuffer buf = new StringBuffer();
             StringBuffer fil = new StringBuffer();
             SimUtil.getIDTimeString(buf, sim);
+            buf.append("[avrora.c-print] ");
             boolean ret=false;//indicates that it is a return line
             switch (value) {
                 case AVRORA_PRINT_STRINGS:
@@ -200,7 +201,7 @@ public class MemPrint extends Simulator.Watch.Empty {
             out.write(str);
             out.close();
         }catch (Exception e){//Catch exception if any
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("[avrora.c-print] Error: " + e.getMessage());
         }
     }
 }

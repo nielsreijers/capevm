@@ -24,10 +24,6 @@ public class RTCTrace extends Simulator.Watch.Empty {
 
 	final static LegacyDisassembler disasm = new LegacyDisassembler();
 
-	int functionStartAddress = 0;
-	int branchTargetCounter = 0;
-
-	
 	private static int bytesToInt(int hi, int lo) { return (short)( ((hi&0xFF)<<8) | (lo&0xFF) ); }
 	private static int bytesToInt(int hi3, int hi2, int hi1, int lo) { return ( ((hi3&0xFF)<<24) | ((hi2&0xFF)<<16) | ((hi1&0xFF)<<8) | (lo&0xFF) ); }
 	private String opcode2string(int[] opcode) {
@@ -256,22 +252,32 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		}
 	}
 
-    static private int getInt8(AtmelInterpreter a, int offset) {
+    static private int getDataInt8(AtmelInterpreter a, int offset) {
         final int l = a.getDataByte(offset);
         return l;
     }
-    static private int getInt16(AtmelInterpreter a, int offset) {
+    static private int getDataInt16(AtmelInterpreter a, int offset) {
         final int l = a.getDataByte(offset);
         final int h = a.getDataByte(offset + 1);
         return ((h & 0xff) << 8) + (l & 0xff);
     }
-    static private int getInt32(AtmelInterpreter a, int offset) {
+    static private int getProgramInt16(AtmelInterpreter a, int offset) {
+        final int l = a.getProgramByte(offset);
+        final int h = a.getProgramByte(offset + 1);
+        return ((h & 0xff) << 8) + (l & 0xff);
+    }
+    static private int getDataInt32(AtmelInterpreter a, int offset) {
         final int l = a.getDataByte(offset);
         final int h = a.getDataByte(offset + 1);
         final int h2 = a.getDataByte(offset + 2);
         final int h3 = a.getDataByte(offset + 3);
         return ((h3 & 0xff) << 24) + ((h2 & 0xff) << 16) + ((h & 0xff) << 8) + (l & 0xff);
     }
+
+	int functionStartAddress = 0;
+	int branchTargetCounter = 0;
+
+
 
     /**
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
@@ -289,53 +295,54 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		switch (value) {
 			case AVRORA_RTC_SINGLEWORDINSTRUCTION: { // 1 word instruction at data_addr+1:data_addr+2
 				byte[] code = new byte[2];
-				code[0] = (byte)getInt8(a, data_addr+1);
-				code[1] = (byte)getInt8(a, data_addr+2);
+				code[0] = (byte)getDataInt8(a, data_addr+1);
+				code[1] = (byte)getDataInt8(a, data_addr+2);
 				AbstractInstr instr = disasm.disassemble(0, 0, code);
-				buf.append("RTCTrace: (AVR)                " + instr + "\n\r");
+				buf.append("[avrora.rtc] AVR                " + instr + "\n\r");
 			}
 			break;
 			case AVRORA_RTC_DOUBLEWORDINSTRUCTION: { // 2 word instruction at data_addr+1:data_addr+2
 				byte[] code = new byte[4];
-				code[0] = (byte)getInt8(a, data_addr+1);
-				code[1] = (byte)getInt8(a, data_addr+2);
-				code[2] = (byte)getInt8(a, data_addr+3);
-				code[3] = (byte)getInt8(a, data_addr+4);
+				code[0] = (byte)getDataInt8(a, data_addr+1);
+				code[1] = (byte)getDataInt8(a, data_addr+2);
+				code[2] = (byte)getDataInt8(a, data_addr+3);
+				code[3] = (byte)getDataInt8(a, data_addr+4);
 				AbstractInstr instr = disasm.disassemble(0, 0, code);
-				buf.append("RTCTrace: (AVR)                " + instr + "\n\r");
+				buf.append("[avrora.rtc] AVR                " + instr + "\n\r");
 			}
 			break;
 			case AVRORA_RTC_STARTMETHOD: {
-				int method_impl_id = (getInt8(a, data_addr+1) & 0xff);
-				functionStartAddress = getInt32(a, data_addr+2);
-				buf.append("\n\r\n\rRTCTrace: NEW METHOD WITH IMPL_ID " + method_impl_id + " STARTS AT 0x" + Integer.toHexString(functionStartAddress) + "\n\r");
+				int method_impl_id = (getDataInt8(a, data_addr+1) & 0xff);
+				functionStartAddress = getDataInt32(a, data_addr+2);
+				buf.append("[avrora.rtc] --------------- NEW METHOD WITH IMPL_ID " + method_impl_id + " STARTS AT 0x" + Integer.toHexString(functionStartAddress) + "\n\r");
 			}
 			break;
 			case AVRORA_RTC_ENDMETHOD: {
-				int functionEndAddress = getInt32(a, data_addr+1);
-				int jvmMethodSize = getInt16(a, data_addr+5);
-				buf.append("RTCTrace: METHOD ENDS AT 0x" + Integer.toHexString(functionEndAddress) + "\n\r");
+				int functionEndAddress = getDataInt32(a, data_addr+1);
+				int jvmMethodSize = getDataInt16(a, data_addr+5);
+				int numberOfBranchTargets = getDataInt8(a, data_addr+7);
+				buf.append("[avrora.rtc] METHOD ENDS AT 0x" + Integer.toHexString(functionEndAddress) + "\n\r");
 				if (functionStartAddress == 0)
-					buf.append("RTCTrace: No function start address?? Did you forget to send the AVRORA_RTC_STARTMETHOD command?");
+					buf.append("[avrora.rtc] No function start address?? Did you forget to send the AVRORA_RTC_STARTMETHOD command?");
 				else
-					addFunctionDisassembly(state, functionStartAddress, functionEndAddress, buf);
-				buf.append("RTCTrace: METHOD END --------------- byte code size: " + jvmMethodSize + ", compiled size: " + (functionEndAddress-functionStartAddress) + "\n\r");
+					addFunctionDisassembly(state, functionStartAddress, functionEndAddress, numberOfBranchTargets, buf);
+				buf.append("[avrora.rtc] --------------- METHOD END byte code size: " + jvmMethodSize + ", compiled size: " + (functionEndAddress-functionStartAddress) + "\n\r");
 				functionStartAddress = 0;
 				branchTargetCounter = 0;
 			}
 			break;
 			case AVRORA_RTC_JAVAOPCODE: {
 				int[] opcode = new int[5];
-				opcode[0] = (getInt8(a, data_addr+1) & 0xff);
-				opcode[1] = (getInt8(a, data_addr+2) & 0xff);
-				opcode[2] = (getInt8(a, data_addr+3) & 0xff);
-				opcode[3] = (getInt8(a, data_addr+4) & 0xff);
-				opcode[4] = (getInt8(a, data_addr+5) & 0xff);
-				buf.append("RTCTrace: (JAVA) " + opcode2string(opcode) + "\n\r");
+				opcode[0] = (getDataInt8(a, data_addr+1) & 0xff);
+				opcode[1] = (getDataInt8(a, data_addr+2) & 0xff);
+				opcode[2] = (getDataInt8(a, data_addr+3) & 0xff);
+				opcode[3] = (getDataInt8(a, data_addr+4) & 0xff);
+				opcode[4] = (getDataInt8(a, data_addr+5) & 0xff);
+				buf.append("[avrora.rtc] JAVA " + opcode2string(opcode) + "\n\r");
 			}
 			break;
 			default:
-				buf.append("RTCTrace: unknown command " + value + "\n\r");
+				buf.append("[avrora.rtc] unknown command " + value + "\n\r");
 			break;
 		}
 
@@ -344,25 +351,22 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		}
     }
 
-    private void addFunctionDisassembly(State state, int functionStartAddress, int functionEndAddress, StringBuffer buf) {
+    private void addFunctionDisassembly(State state, int functionStartAddress, int functionEndAddress, int numberOfBranchTargets, StringBuffer buf) {
+		Simulator sim = state.getSimulator();
+		AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
+
     	ArrayList<Integer> branchTable = new ArrayList<Integer>();
 
     	// Scan branch target addresses
     	int address = functionStartAddress;
     	int i = 0;
-		while (address < functionEndAddress) {
-			AbstractInstr instr = state.getInstr(address);
-
-			if (instr instanceof LegacyInstr.RJMP) {
-				int operand = ((LegacyInstr.RJMP)instr).imm1;
-				Integer targetAddress = address + 2*(1+operand);
-				buf.append("RTCTrace: (AVR) 0x" + Integer.toHexString(address) + "   BRTARGET " + i++ + " at 0x" + Integer.toHexString(targetAddress) + "\n\r");
-				branchTable.add(targetAddress);
-			} else {
-				// End of branch target table
-				break;
-			}
-			address += instr.getSize();
+		buf.append("[avrora.rtc]                NUMBER OF BRTARGETS: " + numberOfBranchTargets + "\n\r");
+		while (address < functionStartAddress+numberOfBranchTargets*2) {
+			int wordOffsetFromFunctionStart = getProgramInt16(a, address);
+			int branchTargetAddress = functionStartAddress + 2*wordOffsetFromFunctionStart;
+			buf.append("[avrora.rtc] AVR 0x" + Integer.toHexString(address) + "   BRTARGET " + i++ + " at 0x" + Integer.toHexString(branchTargetAddress) + "\n\r");
+			branchTable.add(branchTargetAddress);
+			address += 2;
 		}
 
 		// Print compiled method, and add branch target annotations where necessary.
@@ -378,7 +382,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 				branchTargetString = " (BT:" + branchTarget + ")";
 			}
 
-			buf.append("RTCTrace: (AVR) 0x" + Integer.toHexString(address) + branchTargetString + "       " + instr);
+			buf.append("[avrora.rtc] AVR 0x" + Integer.toHexString(address) + branchTargetString + "       " + instr);
 			if (instr instanceof LegacyInstr.RJMP) {
 				// Resolve branch target
 				int operand = ((LegacyInstr.RJMP)instr).imm1;

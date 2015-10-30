@@ -65,27 +65,27 @@ public class MemTimer extends Simulator.Watch.Empty {
         switch (value) {
             case 100:
                 if (timer_state != 0) {
-                    Terminal.printRed("timer: multiple starts in a row??");
+                    Terminal.printRed("[avrora.c-timer] multiple starts in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
                     System.exit(-1);
-                    // buf.append("timer: multiple starts in a row??");
+                    // buf.append("[avrora.c-timer] multiple starts in a row??");
                 } else {
                     start_time = state.getCycles();
-                    buf.append("timer: start");
+                    buf.append("[avrora.c-timer] start");
                 }
                 timer_state = 1;
                 break;
             case 101:
                 if (timer_state != 1) {
-                    buf.append("timer: multiple stops in a row??");
+                    buf.append("[avrora.c-timer] multiple stops in a row??");
                 } else {
                     long stop_time = state.getCycles();
                     long duration = stop_time - start_time;
-                    buf.append("timer: " + String.valueOf(duration) + " cycles");
+                    buf.append("[avrora.c-timer] " + String.valueOf(duration) + " cycles");
                 }
                 timer_state = 0;
                 break;
             default:
-                buf.append("Unexpected command to timer! " + value);
+                buf.append("[avrora.c-timer] Unexpected command to timer! " + value);
                 break;
         }
         Terminal.printRed(buf.toString());

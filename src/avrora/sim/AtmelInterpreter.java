@@ -645,6 +645,10 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
         return Arithmetic.getBit(readSRAM(INSTRUMENTED, toSRAM(ior)), bit);
     }
 
+    public byte getProgramByte(int address) {
+        return flash.get(address);
+    }
+
     /**
      * The <code>getDataByte()</code> method reads a byte value from the data memory (SRAM) at the specified
      * address.
