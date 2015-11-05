@@ -37,6 +37,9 @@ import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.mcu.MCUProperties;
 import cck.util.Arithmetic;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * The <code>LegacyInterpreter</code> class is largely generated from the instruction specification. The
@@ -60,6 +63,8 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public static final LegacyRegister RZ = LegacyRegister.Z;
 
+    public static int[] InstructionExecutionCounters;
+
     /**
      * The constructor for the <code>Interpreter</code> class builds the internal data structures needed to
      * store the complete state of the machine, including registers, IO registers, the SRAM, and the flash.
@@ -72,13 +77,15 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
      */
     protected LegacyInterpreter(Simulator s, Program p, AVRProperties pr) {
         super(s, p, pr);
+
+        this.InstructionExecutionCounters = new int[128*1024];
+
         // this class and its methods are performance critical
         // observed speedup with this call on Hotspot
         Compiler.compileClass(getClass());
     }
 
     protected void runLoop() {
-
         pc = bootPC;
         nextPC = pc;
         cyclesConsumed = 0;
@@ -114,6 +121,25 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
                     instrumentedLoop();
             }
         }
+
+        try {
+            System.out.println("Start export performance data");
+            StringBuilder sb = new StringBuilder();
+            sb.append("executioncount = [");
+            for(int i=0; i<this.InstructionExecutionCounters.length; i++) {
+                if (i!=0) {
+                    sb.append(",");
+                }
+                sb.append(this.InstructionExecutionCounters[i]);
+            }
+            sb.append("]");
+
+            Files.write(Paths.get("duke.txt"), sb.toString().getBytes());
+            // PrintWriter out = new PrintWriter("~/filename.txt");
+            // out.println(sb.toString());
+            // out.close();
+            System.out.println("Finish export performance data");
+        } catch (Exception e) {}
     }
 
     public int step() {
@@ -248,6 +274,8 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
         innerLoop = true;
         while (innerLoop) {
             LegacyInstr i = shared_instr[nextPC];
+
+            InstructionExecutionCounters[nextPC]++;
 
             // visit the actual instruction (or probe)
             i.accept(this);
@@ -1165,6 +1193,12 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
         byte tmp_0 = popByte();
         byte tmp_1 = popByte();
         nextPC = uword(tmp_1, tmp_0) * 2;
+
+        if (nextPC == 0) {
+            System.out.println("RETI RETURNING TO ADDRESS 0x0000! PROBABLY BECAUSE OF A CRASH: ABORTING\n");
+            System.exit(-1);
+        }
+
         enableInterrupts();
         cyclesConsumed += 4;
     }

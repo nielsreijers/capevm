@@ -40,6 +40,9 @@ import cck.stat.StatUtil;
 import cck.text.*;
 import cck.util.Option;
 import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
@@ -59,6 +62,9 @@ public class ProfileMonitor extends MonitorFactory {
     public final Option.Bool CLASSES = newOption("instr-classes", false,
             "This option selects whether the profiling monitor will generate a report of the " +
             "types of instructions that were executed most frequently by the program.");
+    public final Option.Str FILENAME = newOption("profile-data-filename", "",
+            "This option specifies the name of the file to write the profile data to. If not " +
+            "specifed, the output will be printed to the terminal.");
 
     /**
      * The <code>Monitor</code> inner class contains the probes and formatting code that
@@ -143,7 +149,11 @@ public class ProfileMonitor extends MonitorFactory {
         public void report() {
 
             computeTotals();
-            reportProfile();
+            if ( FILENAME.get() != "" ) {
+                reportProfileToFile(FILENAME.get());
+            } else {
+                reportProfile();
+            }
 
             if ( CLASSES.get() ) {
                 reportInstrProfile();
@@ -200,6 +210,58 @@ public class ProfileMonitor extends MonitorFactory {
                 }
 
                 TermUtil.reportQuantity(' ' + addr, cnt, percent);
+            }
+        }
+
+        private void reportProfileToFile(String filename) {
+            int imax = icount.length;
+
+            StringBuilder sb_single = new StringBuilder();
+            StringBuilder sb_cumulative = new StringBuilder();
+            sb_single.append("executionCountPerInstruction={\n");
+            sb_cumulative.append("executionCountPerBasicblock={\n");
+
+            // report the profile for each instruction in the program
+            for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
+                sb_single.append(String.format("dict(address=%s, executions=%d, cycles=%d),\n",
+                    StringUtil.addrToString(cntr), icount[cntr], itime[cntr]));
+            }
+
+            for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
+                int start = cntr;
+                int runlength = 1;
+                long curcount = icount[cntr];
+                long cumulcycles = itime[cntr];
+
+                // collapse long runs of equivalent counts (e.g. basic blocks)
+                int nextpc;
+                for (; cntr < imax - 2; cntr = nextpc) {
+                    nextpc = program.getNextPC(cntr);
+                    if (nextpc >= icount.length || icount[nextpc] != curcount)
+                        break;
+                    runlength++;
+                    cumulcycles += itime[nextpc];
+                }
+                sb_cumulative.append(String.format("dict(start=%s, end=%s, length=%3x, executions=%10d, cycles=%10d),\n",
+                    StringUtil.addrToString(start),
+                    StringUtil.addrToString(cntr),
+                    runlength,
+                    curcount,
+                    cumulcycles));
+            }
+
+            sb_single.append("}\n\n");
+            sb_cumulative.append("}\n\n");
+
+            try {
+                Terminal.print("Writing performance trace to " + filename);
+                Terminal.nextln();
+                String executionCountsString = sb_single.toString() + sb_cumulative.toString();
+                Files.write(Paths.get(filename), executionCountsString.getBytes());
+            }
+            catch (Exception e) {
+                Terminal.print("FAILED!");
+                Terminal.nextln();
             }
         }
 

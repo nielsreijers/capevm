@@ -25,6 +25,9 @@ public class RTCMonitor extends MonitorFactory {
     protected final Option.Str BASEADDR = newOption("rtcMonitorBaseAddr", "",
             "This option specifies the starting address in SRAM of the memory region to " +
             "watch for instructions. (If specified, it takes precedence over VariableName).");
+    protected final Option.Str FILENAME = newOption("rtc-data-filename", "",
+            "This option specifies the name of the file to write the rtc data to. If not " +
+            "specifed, the output will be printed to the terminal.");
 
     static final Printer verbosePrinter = Verbose.getVerbosePrinter("c-print");
 
@@ -51,7 +54,7 @@ public class RTCMonitor extends MonitorFactory {
 
             if (base != -1) {
                 verbosePrinter.println("rtc monitor monitoring SRAM at " + base);
-                RTCTrace rtctrace = new RTCTrace();
+                RTCTrace rtctrace = new RTCTrace(FILENAME.get());
                 s.insertWatch(rtctrace, base);
             } else {
                 verbosePrinter.println("rtc monitor not monitoring any memory region");
