@@ -223,7 +223,7 @@ public class ProfileMonitor extends MonitorFactory {
 
             // report the profile for each instruction in the program
             for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
-                sb_single.append(String.format("dict(address=%s, executions=%d, cycles=%d),\n",
+                sb_single.append(String.format("AddressTraceEntry(address=%s, executions=%d, cycles=%d),\n",
                     StringUtil.addrToString(cntr), icount[cntr], itime[cntr]));
             }
 
@@ -242,10 +242,10 @@ public class ProfileMonitor extends MonitorFactory {
                     runlength++;
                     cumulcycles += itime[nextpc];
                 }
-                sb_cumulative.append(String.format("dict(start=%s, end=%s, length=%3x, executions=%10d, cycles=%10d),\n",
+                sb_cumulative.append(String.format("BasicBlockTraceEntry(start=%s, end=%s, length=%6s, executions=%10d, cycles=%10d),\n",
                     StringUtil.addrToString(start),
                     StringUtil.addrToString(cntr),
-                    runlength,
+                    "0x" + Integer.toHexString(runlength),
                     curcount,
                     cumulcycles));
             }
@@ -253,15 +253,18 @@ public class ProfileMonitor extends MonitorFactory {
             sb_single.append("}\n\n");
             sb_cumulative.append("}\n\n");
 
+            String executionCountsString = "";
+            executionCountsString += "from collections import namedtuple\n\r";
+            executionCountsString += "AddressTraceEntry = namedtuple(\"AddressTraceEntry\", \"address executions cycles\")\n\r";
+            executionCountsString += "BasicBlockTraceEntry = namedtuple(\"AddressTraceEntry\", \"start end length executions cycles\")\n\r";
+            executionCountsString += sb_single.toString();
+            executionCountsString += sb_cumulative.toString();
             try {
-                Terminal.print("Writing performance trace to " + filename);
-                Terminal.nextln();
-                String executionCountsString = sb_single.toString() + sb_cumulative.toString();
+                Terminal.println("Writing performance trace to " + filename);
                 Files.write(Paths.get(filename), executionCountsString.getBytes());
-            }
-            catch (Exception e) {
-                Terminal.print("FAILED!");
-                Terminal.nextln();
+                Terminal.println("Done.");
+            } catch (Exception e) {
+                Terminal.println("FAILED!!");
             }
         }
 

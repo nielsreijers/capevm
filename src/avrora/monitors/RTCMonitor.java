@@ -1,5 +1,3 @@
-
-
 package avrora.monitors;
 
 import avrora.sim.Simulator;
@@ -9,6 +7,10 @@ import cck.util.Option;
 import cck.util.Util;
 import cck.text.Verbose;
 import cck.text.Printer;
+import cck.text.Terminal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * The <code>PrintMonitor</code> gives apps a simple way to tell the
@@ -32,6 +34,7 @@ public class RTCMonitor extends MonitorFactory {
     static final Printer verbosePrinter = Verbose.getVerbosePrinter("c-print");
 
     public class Monitor implements avrora.monitors.Monitor {
+        private RTCTrace rtctrace;
 
         Monitor(Simulator s) {
             int base = -1;
@@ -54,7 +57,7 @@ public class RTCMonitor extends MonitorFactory {
 
             if (base != -1) {
                 verbosePrinter.println("rtc monitor monitoring SRAM at " + base);
-                RTCTrace rtctrace = new RTCTrace(FILENAME.get());
+                rtctrace = new RTCTrace();
                 s.insertWatch(rtctrace, base);
             } else {
                 verbosePrinter.println("rtc monitor not monitoring any memory region");
@@ -62,7 +65,26 @@ public class RTCMonitor extends MonitorFactory {
         }
 
         public void report() {
-            // do nothing.
+            if (rtctrace != null) {
+                String filename = FILENAME.get();
+                if (filename == "") {
+                    // Print to screen
+                    synchronized (Terminal.class) {
+                        Terminal.print(rtctrace.toString());
+                    }
+                } else {
+                    // Export output as python file
+                    try {
+                        Terminal.println("Writing rtc data to " + filename);
+                        Files.write(Paths.get(filename), rtctrace.toPythonString().getBytes());
+                        Terminal.println("Done.");
+                    } catch (Exception e) {
+                        Terminal.println("FAILED!!");
+                    }
+                }
+            } else {
+                Terminal.print("No rtctrace.");
+            }
         }
     }
 
