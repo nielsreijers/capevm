@@ -17,6 +17,8 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_STARTMETHOD           3;
 #define AVRORA_RTC_ENDMETHOD             4;
 #define AVRORA_RTC_JAVAOPCODE            5;
+#define AVRORA_RTC_PATCHINGBRANCHES_ON   6;
+#define AVRORA_RTC_PATCHINGBRANCHES_OFF  7;
 
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
@@ -56,4 +58,13 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmem(unsigned
 	rtcMonitorVariable[0] = AVRORA_RTC_JAVAOPCODE;
 }
 
+static AVRORA_PRINT_INLINE void avroraRTCTracePatchingBranchesOn()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_PATCHINGBRANCHES_ON;
+}
+
+static AVRORA_PRINT_INLINE void avroraRTCTracePatchingBranchesOff()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_PATCHINGBRANCHES_OFF;
+}
 #endif

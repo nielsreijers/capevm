@@ -213,7 +213,7 @@ public class ProfileMonitor extends MonitorFactory {
             }
         }
 
-        private void reportProfileToFile(String filename) {
+        private String profileToPyString() {
             int imax = icount.length;
 
             StringBuilder sb_single = new StringBuilder();
@@ -253,15 +253,65 @@ public class ProfileMonitor extends MonitorFactory {
             sb_single.append("}\n\n");
             sb_cumulative.append("}\n\n");
 
-            String executionCountsString = "";
-            executionCountsString += "from collections import namedtuple\n\r";
-            executionCountsString += "AddressTraceEntry = namedtuple(\"AddressTraceEntry\", \"address executions cycles\")\n\r";
-            executionCountsString += "BasicBlockTraceEntry = namedtuple(\"AddressTraceEntry\", \"start end length executions cycles\")\n\r";
-            executionCountsString += sb_single.toString();
-            executionCountsString += sb_cumulative.toString();
+            String pyString = "";
+            pyString += "from collections import namedtuple\n\r";
+            pyString += "AddressTraceEntry = namedtuple(\"AddressTraceEntry\", \"address executions cycles\")\n\r";
+            pyString += "BasicBlockTraceEntry = namedtuple(\"AddressTraceEntry\", \"start end length executions cycles\")\n\r";
+            pyString += sb_single.toString();
+            pyString += sb_cumulative.toString();
+            return pyString;
+        }
+
+        private String profileToXmlString() {
+            int imax = icount.length;
+
+            StringBuilder sb_single = new StringBuilder();
+            StringBuilder sb_cumulative = new StringBuilder();
+            sb_single.append("<ExecutionCountPerInstruction>\n");
+            // sb_cumulative.append("<ExecutionCountPerBasicblock>\n");
+
+            // report the profile for each instruction in the program
+            for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
+                sb_single.append(String.format("    <Instruction address=\"%s\" executions=\"%d\" cycles=\"%d\" />\n",
+                    StringUtil.addrToString(cntr), icount[cntr], itime[cntr]));
+            }
+
+            // for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
+            //     int start = cntr;
+            //     int runlength = 1;
+            //     long curcount = icount[cntr];
+            //     long cumulcycles = itime[cntr];
+
+            //     // collapse long runs of equivalent counts (e.g. basic blocks)
+            //     int nextpc;
+            //     for (; cntr < imax - 2; cntr = nextpc) {
+            //         nextpc = program.getNextPC(cntr);
+            //         if (nextpc >= icount.length || icount[nextpc] != curcount)
+            //             break;
+            //         runlength++;
+            //         cumulcycles += itime[nextpc];
+            //     }
+            //     sb_cumulative.append(String.format("    <Basicblock start=\"%s\" end=\"%s\" length=\"%6s\" executions=\"%10d\" cycles=\"%10d\" />\n",
+            //         StringUtil.addrToString(start),
+            //         StringUtil.addrToString(cntr),
+            //         "0x" + Integer.toHexString(runlength),
+            //         curcount,
+            //         cumulcycles));
+            // }
+
+            sb_single.append("</ExecutionCountPerInstruction>\n\n");
+            // sb_cumulative.append("</ExecutionCountPerBasicblock>\n\n");
+
+            // return sb_single.toString() + sb_cumulative.toString();
+            return sb_single.toString();
+        }
+        private void reportProfileToFile(String filename) {
             try {
-                Terminal.println("Writing performance trace to " + filename);
-                Files.write(Paths.get(filename), executionCountsString.getBytes());
+                Terminal.println("Writing performance trace to " + filename + ".py");
+                Files.write(Paths.get(filename + ".py"), profileToPyString().getBytes());
+                Terminal.println("Done.");
+                Terminal.println("Writing performance trace to " + filename + ".xml");
+                Files.write(Paths.get(filename + ".xml"), profileToXmlString().getBytes());
                 Terminal.println("Done.");
             } catch (Exception e) {
                 Terminal.println("FAILED!!");

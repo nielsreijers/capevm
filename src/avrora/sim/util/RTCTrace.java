@@ -21,6 +21,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_STARTMETHOD           = 3;
 	final static int AVRORA_RTC_ENDMETHOD             = 4;
 	final static int AVRORA_RTC_JAVAOPCODE            = 5;
+	final static int AVRORA_RTC_PATCHINGBRANCHES_ON   = 6;
+	final static int AVRORA_RTC_PATCHINGBRANCHES_OFF  = 7;
 
 	final static LegacyDisassembler disasm = new LegacyDisassembler();
 
@@ -325,6 +327,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 
 	private int branchTargetCounter;
 	private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
+	boolean patchingBranches = false;
 
     /**
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
@@ -338,76 +341,89 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
 		MethodImpl currentMethod;
 
+		// Check if we're turning the patchingBranches switch on or off
 		switch (value) {
-			case AVRORA_RTC_STARTMETHOD: {
-				currentMethod = new MethodImpl();
-				currentMethod.MethodImplId = (getDataInt8(a, data_addr+1) & 0xff);
-				currentMethod.StartAddress = getDataInt32(a, data_addr+2);
-				methodImpls.add(currentMethod);
-				branchTargetCounter = 0;
+			case AVRORA_RTC_PATCHINGBRANCHES_ON: {
+				this.patchingBranches = true;
+				return;
 			}
-			break;
-			case AVRORA_RTC_JAVAOPCODE: {
-				int[] opcode = new int[5];
-				opcode[0] = (getDataInt8(a, data_addr+1) & 0xff);
-				opcode[1] = (getDataInt8(a, data_addr+2) & 0xff);
-				opcode[2] = (getDataInt8(a, data_addr+3) & 0xff);
-				opcode[3] = (getDataInt8(a, data_addr+4) & 0xff);
-				opcode[4] = (getDataInt8(a, data_addr+5) & 0xff);
-
-				JavaInstruction javaInstruction = new JavaInstruction();
-				javaInstruction.Text = opcode2string(opcode);
-				currentMethod = methodImpls.get(methodImpls.size()-1);
-				currentMethod.JavaInstructions.add(javaInstruction);
+			case AVRORA_RTC_PATCHINGBRANCHES_OFF: {
+				this.patchingBranches = false;
+				return;
 			}
-			break;
-			case AVRORA_RTC_SINGLEWORDINSTRUCTION: { // 1 word instruction at data_addr+1:data_addr+2
-				byte[] code = new byte[2];
-				code[0] = (byte)getDataInt8(a, data_addr+1);
-				code[1] = (byte)getDataInt8(a, data_addr+2);
-				AbstractInstr instr = disasm.disassemble(0, 0, code);
-
-				AvrInstruction avrInstruction = new AvrInstruction();
-				avrInstruction.Opcode = getDataInt16(a, data_addr+1);
-				avrInstruction.Text = instr.toString();
-				currentMethod = methodImpls.get(methodImpls.size()-1);
-				currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
-			}
-			break;
-			case AVRORA_RTC_DOUBLEWORDINSTRUCTION: { // 2 word instruction at data_addr+1:data_addr+2
-				byte[] code = new byte[4];
-				code[0] = (byte)getDataInt8(a, data_addr+1);
-				code[1] = (byte)getDataInt8(a, data_addr+2);
-				code[2] = (byte)getDataInt8(a, data_addr+3);
-				code[3] = (byte)getDataInt8(a, data_addr+4);
-				AbstractInstr instr = disasm.disassemble(0, 0, code);
-
-				AvrInstruction avrInstruction = new AvrInstruction();
-				avrInstruction.Opcode = getDataInt32(a, data_addr+1);
-				avrInstruction.Text = instr.toString();
-				currentMethod = methodImpls.get(methodImpls.size()-1);
-				currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
-			}
-			break;
-			case AVRORA_RTC_ENDMETHOD: {
-				currentMethod = methodImpls.get(methodImpls.size()-1);
-				currentMethod.EndAddress = getDataInt32(a, data_addr+1);
-				currentMethod.JvmMethodSize = getDataInt16(a, data_addr+5);
-				int numberOfBranchTargets = getDataInt8(a, data_addr+7);
-
-				if (currentMethod.StartAddress == 0) {
-					Terminal.print("[avrora.rtc] No function start address?? Did you forget to send the AVRORA_RTC_STARTMETHOD command?");
-				} else {
-					addFunctionDisassembly(state, currentMethod, numberOfBranchTargets);
-				}
-			}
-			break;
-
-			default:
-				Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
-			break;
 		}
 
+		if (!patchingBranches) {
+			switch (value) {
+				case AVRORA_RTC_STARTMETHOD: {
+					currentMethod = new MethodImpl();
+					currentMethod.MethodImplId = (getDataInt8(a, data_addr+1) & 0xff);
+					currentMethod.StartAddress = getDataInt32(a, data_addr+2);
+					methodImpls.add(currentMethod);
+					branchTargetCounter = 0;
+				}
+				break;
+				case AVRORA_RTC_JAVAOPCODE: {
+					int[] opcode = new int[5];
+					opcode[0] = (getDataInt8(a, data_addr+1) & 0xff);
+					opcode[1] = (getDataInt8(a, data_addr+2) & 0xff);
+					opcode[2] = (getDataInt8(a, data_addr+3) & 0xff);
+					opcode[3] = (getDataInt8(a, data_addr+4) & 0xff);
+					opcode[4] = (getDataInt8(a, data_addr+5) & 0xff);
+
+					JavaInstruction javaInstruction = new JavaInstruction();
+					javaInstruction.Text = opcode2string(opcode);
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.JavaInstructions.add(javaInstruction);
+				}
+				break;
+				case AVRORA_RTC_SINGLEWORDINSTRUCTION: { // 1 word instruction at data_addr+1:data_addr+2
+					byte[] code = new byte[2];
+					code[0] = (byte)getDataInt8(a, data_addr+1);
+					code[1] = (byte)getDataInt8(a, data_addr+2);
+					AbstractInstr instr = disasm.disassemble(0, 0, code);
+
+					AvrInstruction avrInstruction = new AvrInstruction();
+					avrInstruction.Opcode = getDataInt16(a, data_addr+1);
+					avrInstruction.Text = instr.toString();
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
+				}
+				break;
+				case AVRORA_RTC_DOUBLEWORDINSTRUCTION: { // 2 word instruction at data_addr+1:data_addr+2
+					byte[] code = new byte[4];
+					code[0] = (byte)getDataInt8(a, data_addr+1);
+					code[1] = (byte)getDataInt8(a, data_addr+2);
+					code[2] = (byte)getDataInt8(a, data_addr+3);
+					code[3] = (byte)getDataInt8(a, data_addr+4);
+					AbstractInstr instr = disasm.disassemble(0, 0, code);
+
+					AvrInstruction avrInstruction = new AvrInstruction();
+					avrInstruction.Opcode = getDataInt32(a, data_addr+1);
+					avrInstruction.Text = instr.toString();
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
+				}
+				break;
+				case AVRORA_RTC_ENDMETHOD: {
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.EndAddress = getDataInt32(a, data_addr+1);
+					currentMethod.JvmMethodSize = getDataInt16(a, data_addr+5);
+					int numberOfBranchTargets = getDataInt8(a, data_addr+7);
+
+					if (currentMethod.StartAddress == 0) {
+						Terminal.print("[avrora.rtc] No function start address?? Did you forget to send the AVRORA_RTC_STARTMETHOD command?");
+					} else {
+						addFunctionDisassembly(state, currentMethod, numberOfBranchTargets);
+					}
+				}
+				break;
+
+				default:
+					Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
+				break;
+			}
+		}
     }
 
     public String toString() {
@@ -454,7 +470,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
     }
 
     private String AvrInstruction2PyString(AvrInstruction avrInstruction) {
-    	return String.format("AvrInstruction(address = %8s, opcode = %10s, isBranchThroughBranchTable = %5s, branchTarget = %3d, text = '%s')",
+    	return String.format("AvrInstruction(address = %8s, opcode = %10s, isBranchThroughBranchTable = %5s, branchTarget = %3d, jvm = None, text = '%s')",
 			"0x" + Integer.toHexString(avrInstruction.Address),
 			"0x" + Integer.toHexString(avrInstruction.Opcode),
     		avrInstruction.IsBranchThroughBranchTable ? "True" : "False",
@@ -465,8 +481,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
         StringBuffer buf = new StringBuffer();
 		buf.append("from collections import namedtuple\n\r");
 		buf.append("MethodImpl = namedtuple(\"MethodImpl\", \"methodImplId startAddress endAddress jvmMethodSize avrMethodSize javaInstructions branchTargets avrInstructions\")\n\r");
-		buf.append("JavaInstruction = namedtuple(\"JavaInstruction\", \"text unoptimisedAvr\")\n\r");
-		buf.append("AvrInstruction = namedtuple(\"AvrInstruction\", \"address opcode isBranchThroughBranchTable branchTarget text\")\n\r");
+		buf.append("JavaInstruction = namedtuple(\"JavaInstruction\", \"index text unoptimisedAvr optimisedAvr\")\n\r");
+		buf.append("AvrInstruction = namedtuple(\"AvrInstruction\", \"address opcode isBranchThroughBranchTable branchTarget jvm text\")\n\r");
 		buf.append("\n\r");
 		buf.append("methods=[\n\r");
 
@@ -478,15 +494,18 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			buf.append("        jvmMethodSize = " + method.JvmMethodSize + ",\n\r");
 			buf.append("        avrMethodSize = " + (method.EndAddress-method.StartAddress) + ",\n\r");			
 			buf.append("        javaInstructions = [\n\r");
+			int instructionIndex = 0;
 			for (JavaInstruction javaInstruction : method.JavaInstructions) {
 				buf.append("            JavaInstruction(\n\r");
+				buf.append("                index = '" + instructionIndex++ + "',\n\r");
 				buf.append("                text = '" + javaInstruction.Text + "',\n\r");
 				buf.append("                unoptimisedAvr = [\n\r");
 				for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
 					buf.append("                    " + AvrInstruction2PyString(avrInstruction) + ",\n\r");
 				}
-				buf.append("                ]");
-				buf.append("            ),");
+				buf.append("                ],\n\r");
+				buf.append("                optimisedAvr = []\n\r");
+				buf.append("            ),\n\r");
 			}
 			buf.append("        ],\n\r");
 			buf.append("        branchTargets = [\n\r");
@@ -504,6 +523,55 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		buf.append("]\n\r");
 		return buf.toString();
     }
+
+
+    private String AvrInstruction2XmlString(AvrInstruction avrInstruction) {
+    	return String.format("<avrInstruction address=\"%8s\" opcode=\"%10s\" isBranchThroughBranchTable=\"%5s\" branchTarget=\"%3d\" text=\"%s\" />",
+			"0x" + Integer.toHexString(avrInstruction.Address),
+			"0x" + Integer.toHexString(avrInstruction.Opcode),
+    		avrInstruction.IsBranchThroughBranchTable ? "True" : "False",
+    		avrInstruction.BranchTarget,
+    		avrInstruction.Text);
+    }
+    public String toXmlString() {
+        StringBuffer buf = new StringBuffer();
+		buf.append("<methods>");
+
+		for (MethodImpl method : methodImpls) {
+			buf.append("    <methodImpl\n\r");
+			buf.append("            methodImplId=\"" + method.MethodImplId + "\"\n\r");
+			buf.append("            startAddress=\"0x" + Integer.toHexString(method.StartAddress) + "\"\n\r");
+			buf.append("            endAddress=\"0x" + Integer.toHexString(method.EndAddress) + "\"\n\r");
+			buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"\n\r");
+			buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\" >\n\r");			
+			buf.append("        <javaInstructions>\n\r");
+			int instructionIndex = 0;
+			for (JavaInstruction javaInstruction : method.JavaInstructions) {
+				buf.append("            <javaInstruction index=\"" + instructionIndex++ + "\" text=\"" + javaInstruction.Text + "\">\n\r");
+				buf.append("                <unoptimisedAvr>\n\r");
+				for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
+					buf.append("                    " + AvrInstruction2XmlString(avrInstruction) + "\n\r");
+				}
+				buf.append("                </unoptimisedAvr>\n\r");
+				buf.append("            </javaInstruction>\n\r");
+			}
+			buf.append("        </javaInstructions>\n\r");
+			buf.append("        <branchTargets>\n\r");
+			for (int i=0; i<method.BranchTargets.size(); i++) {
+				buf.append("            <branchTarget target=\"0x" + Integer.toHexString(method.BranchTargets.get(i)) + "\" />\n\r");
+			}
+			buf.append("        </branchTargets>\n\r");
+			buf.append("        <avrInstructions>\n\r");
+			for (AvrInstruction avrInstruction : method.AvrInstructions) {
+				buf.append("                " + AvrInstruction2XmlString(avrInstruction) + ",\n\r");
+			}
+			buf.append("        </avrInstructions>\n\r");
+			buf.append("    </methodImpl>\n\r");
+		}
+		buf.append("</methods>");
+		return buf.toString();
+    }
+
 
     private void addFunctionDisassembly(State state, MethodImpl method, int numberOfBranchTargets) {
 		Simulator sim = state.getSimulator();
