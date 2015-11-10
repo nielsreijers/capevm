@@ -75,11 +75,8 @@ public class RTCMonitor extends MonitorFactory {
                 } else {
                     // Export output as python file
                     try {
-                        Terminal.println("Writing rtc data to " + filename + ".py");
-                        Files.write(Paths.get(filename+".py"), rtctrace.toPythonString().getBytes());
-                        Terminal.println("Done.");
-                        Terminal.println("Writing rtc data to " + filename + ".xml");
-                        Files.write(Paths.get(filename+".xml"), rtctrace.toXmlString().getBytes());
+                        Terminal.println("Writing rtc data to " + filename);
+                        Files.write(Paths.get(filename), rtctrace.toXmlString().getBytes());
                         Terminal.println("Done.");
                     } catch (Exception e) {
                         Terminal.println("FAILED!!");

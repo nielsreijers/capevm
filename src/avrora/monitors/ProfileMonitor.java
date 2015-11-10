@@ -307,11 +307,8 @@ public class ProfileMonitor extends MonitorFactory {
         }
         private void reportProfileToFile(String filename) {
             try {
-                Terminal.println("Writing performance trace to " + filename + ".py");
-                Files.write(Paths.get(filename + ".py"), profileToPyString().getBytes());
-                Terminal.println("Done.");
-                Terminal.println("Writing performance trace to " + filename + ".xml");
-                Files.write(Paths.get(filename + ".xml"), profileToXmlString().getBytes());
+                Terminal.println("Writing performance trace to " + filename);
+                Files.write(Paths.get(filename), profileToXmlString().getBytes());
                 Terminal.println("Done.");
             } catch (Exception e) {
                 Terminal.println("FAILED!!");
