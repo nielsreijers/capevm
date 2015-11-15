@@ -47,6 +47,7 @@ public class MemTimer extends Simulator.Watch.Empty {
     int base;
     long start_time = 0;
     int timer_state = 0;
+    int timer_number = 1;
 
     public MemTimer(int b) {
         base = b;
@@ -62,31 +63,29 @@ public class MemTimer extends Simulator.Watch.Empty {
         StringBuffer buf = new StringBuffer();
         SimUtil.getIDTimeString(buf, sim);
 
-        switch (value) {
-            case 100:
-                if (timer_state != 0) {
-                    Terminal.printRed("[avrora.c-timer] multiple starts in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
-                    System.exit(-1);
-                    // buf.append("[avrora.c-timer] multiple starts in a row??");
-                } else {
-                    start_time = state.getCycles();
-                    buf.append("[avrora.c-timer] start");
-                }
-                timer_state = 1;
-                break;
-            case 101:
-                if (timer_state != 1) {
-                    buf.append("[avrora.c-timer] multiple stops in a row??");
-                } else {
-                    long stop_time = state.getCycles();
-                    long duration = stop_time - start_time;
-                    buf.append("[avrora.c-timer] " + String.valueOf(duration) + " cycles");
-                }
-                timer_state = 0;
-                break;
-            default:
-                buf.append("[avrora.c-timer] Unexpected command to timer! " + value);
-                break;
+        if (value == 0) {
+            return;
+        } else if (value == -1) {
+            if (timer_state != 0) {
+                Terminal.printRed("[avrora.c-timer] multiple starts in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
+                System.exit(-1);
+                // buf.append("[avrora.c-timer] multiple starts in a row??");
+            } else {
+                start_time = state.getCycles();
+                buf.append("[avrora.c-timer] start");
+            }
+            timer_state = 1;
+        } else if (value == -2) {
+            if (timer_state != 1) {
+                buf.append("[avrora.c-timer] multiple stops in a row??");
+            } else {
+                long stop_time = state.getCycles();
+                long duration = stop_time - start_time;
+                buf.append("[avrora.c-timer] timer number " + String.valueOf(timer_number) + ": " + String.valueOf(duration) + " cycles");
+            }
+            timer_state = 0;
+        } else if (value > 0) {
+            this.timer_number = value;
         }
         Terminal.printRed(buf.toString());
         Terminal.nextln();

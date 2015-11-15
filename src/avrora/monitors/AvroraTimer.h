@@ -67,15 +67,21 @@
 /* Try the C99 keyword instead. */
 # define AVRORA_TIMER_INLINE inline
 #endif
-volatile uint8_t ctimerWatch;
+volatile int8_t ctimerWatch;
 
+// -1 starts the timer
+// any positive number stops the timer and reports that number (for scripting purposes)
 static AVRORA_TIMER_INLINE void avroraStartTimer()
 {
-	ctimerWatch = 100;
+	ctimerWatch = -1;
 }
 static AVRORA_TIMER_INLINE void avroraStopTimer()
 {
-	ctimerWatch = 101;
+	ctimerWatch = -2;
+}
+static AVRORA_TIMER_INLINE void avroraSetTimerNumber(int8_t number) // number should be 
+{
+	ctimerWatch = number;
 }
 
 
