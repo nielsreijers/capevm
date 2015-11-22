@@ -36,6 +36,7 @@ import avrora.arch.AbstractInstr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.arch.legacy.LegacyInstr;
 import cck.stat.StatUtil;
 import cck.text.*;
 import cck.util.Option;
@@ -76,6 +77,14 @@ public class ProfileMonitor extends MonitorFactory {
 
         public final long[] icount;
         public final long[] itime;
+        public final long[] isubroutinetime;
+        public class CallStackRecord {
+            public int sourcePC;
+            public int returnAddress;
+            public long time;
+        }
+        public final Stack<CallStackRecord> callstack;
+        public int expectedNextPc = 0;
 
         Mon(Simulator s) {
             simulator = s;
@@ -85,6 +94,10 @@ public class ProfileMonitor extends MonitorFactory {
             icount = new long[program.program_end];
             // allocate a global array for the cycles of each instruction
             itime = new long[program.program_end];
+            // allocate a global array for the cycles consumed in a subroutine for each CALL instruction
+            isubroutinetime = new long[program.program_end];
+            // and a stack to keep track of CALLs/RETs
+            callstack = new Stack<CallStackRecord>();
 
             long period = PERIOD.get();
             if ( period > 0 ) {
@@ -125,13 +138,65 @@ public class ProfileMonitor extends MonitorFactory {
         public class CCProbe implements Simulator.Probe {
             protected long timeBegan;
 
+            private void printCall(int pc, AbstractInstr inst) {
+                String padding = new String(new char[callstack.size()*2]).replace('\0', ' ');
+                if (inst instanceof LegacyInstr.CALL) {
+                    int target = ((LegacyInstr.CALL)inst).imm1;
+                    Terminal.println(String.format("%sCALL at 0x%s to 0x%s", padding, Integer.toHexString(pc), Integer.toHexString(target*2)));
+                }
+                if (inst instanceof LegacyInstr.RCALL) {
+                    int offset = ((LegacyInstr.RCALL)inst).imm1;
+                    LegacyInstr.RCALL callInst = (LegacyInstr.RCALL)inst;
+                    Terminal.println(String.format("%sRCALL at 0x%s by 0x%s to 0x%s", padding, Integer.toHexString(pc), Integer.toHexString(offset*2), Integer.toHexString(pc+2+offset*2)));
+                }
+                if (inst instanceof LegacyInstr.ICALL) {
+                   Terminal.println(String.format("%sICALL at 0x%s to ??? (todo)", padding, Integer.toHexString(pc)));
+                }
+                if (inst instanceof LegacyInstr.EICALL) {
+                    Terminal.println(String.format("%sEICALL at 0x%s to ??? (todo)", padding, Integer.toHexString(pc)));
+                }
+            }
+            private void printRet(int pc, int returnToPc) {
+                String padding = new String(new char[callstack.size()*2]).replace('\0', ' ');
+                Terminal.println(String.format("%sRET at 0x%s to 0x%s", padding, Integer.toHexString(pc), Integer.toHexString(returnToPc)));
+            }
+
             public void fireBefore(State state, int pc) {
                 icount[pc]++;
                 timeBegan = state.getCycles();
+
+                if (expectedNextPc != 0 && pc != expectedNextPc) {
+                    if (pc != 0x40) { // We may be at 0x40 because of an interrupt
+                        Terminal.println(String.format("UNEXPECTED PC: 0x%s!! (expecting 0x%s)", Integer.toHexString(pc), Integer.toHexString(expectedNextPc)));
+                    }
+                    expectedNextPc = 0;
+                } else {
+                    expectedNextPc = 0;
+                }
+                AbstractInstr inst = state.getInstr(pc);
+                if (inst instanceof LegacyInstr.CALL
+                        || (inst instanceof LegacyInstr.RCALL && ((LegacyInstr.RCALL)inst).imm1 != 0) // RCALL +0 is used to reserve stack space, but isn't actually a call.
+                        || inst instanceof LegacyInstr.ICALL
+                        || inst instanceof LegacyInstr.EICALL) {
+                    // printCall(pc, inst);
+                    CallStackRecord r = new CallStackRecord();
+                    r.sourcePC = pc;
+                    r.returnAddress = inst instanceof LegacyInstr.CALL ? pc+4 : pc+2;
+                    r.time = state.getCycles();
+                    callstack.push(r);
+                }
             }
 
             public void fireAfter(State state, int pc) {
                 itime[pc] += state.getCycles() - timeBegan;
+
+                AbstractInstr inst = state.getInstr(pc);
+                if (inst instanceof LegacyInstr.RET) {
+                    CallStackRecord r = callstack.pop();
+                    isubroutinetime[r.sourcePC] += state.getCycles() - r.time;
+                    expectedNextPc = r.returnAddress;
+                    // printRet(pc, r.sourcePC);
+                }
             }
         }
 
@@ -272,8 +337,8 @@ public class ProfileMonitor extends MonitorFactory {
 
             // report the profile for each instruction in the program
             for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
-                sb_single.append(String.format("    <Instruction address=\"%s\" executions=\"%d\" cycles=\"%d\" />\n",
-                    StringUtil.addrToString(cntr), icount[cntr], itime[cntr]));
+                sb_single.append(String.format("    <Instruction address=\"%s\" executions=\"%d\" cycles=\"%d\" cyclesSubroutine=\"%d\"/>\n",
+                    StringUtil.addrToString(cntr), icount[cntr], itime[cntr], isubroutinetime[cntr]));
             }
 
             // for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
