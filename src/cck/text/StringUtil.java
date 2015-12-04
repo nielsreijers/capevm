@@ -453,7 +453,7 @@ public class StringUtil {
     }
 
     private static String convertToHex(long value, int width, int start, char[] result, char[] hexChars) {
-        if (value > (long) 1 << width * 4) {
+        if (value >= (long) 1 << width * 4) {
             StringBuffer buf = new StringBuffer();
             for (int cntr = 0; cntr < start; cntr++) buf.append(result[cntr]);
             buf.append(Long.toHexString(value).toUpperCase());
