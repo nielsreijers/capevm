@@ -23,6 +23,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_JAVAOPCODE            = 5;
 	final static int AVRORA_RTC_PATCHINGBRANCHES_ON   = 6;
 	final static int AVRORA_RTC_PATCHINGBRANCHES_OFF  = 7;
+	final static int AVRORA_RTC_STACKCACHESTATE       = 8;
 
 	final static LegacyDisassembler disasm = new LegacyDisassembler();
 
@@ -298,6 +299,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	private class JavaInstruction {
 		public String Text;
 		public ArrayList<AvrInstruction> UnoptimisedAvr;
+		public ArrayList<Short> StackCacheState;
 
 		public JavaInstruction() {
 			this.UnoptimisedAvr = new ArrayList<AvrInstruction>();
@@ -418,6 +420,15 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					}
 				}
 				break;
+				case AVRORA_RTC_STACKCACHESTATE:
+					int stackcachestate_addr = ((int)getDataInt8(a, data_addr+1) & 0xFF) + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8);
+					ArrayList<Short> stackcachestate = new ArrayList<Short>();					
+					for (int i=0; i<16; i++) {
+						stackcachestate.add((short)getDataInt8(a, stackcachestate_addr+i));
+					}
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.lastJavaInstruction().StackCacheState = stackcachestate;
+				break;
 
 				default:
 					Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
@@ -525,6 +536,22 @@ public class RTCTrace extends Simulator.Watch.Empty {
     }
 
 
+    private String StackCacheState2String(short stackCacheState) {
+		switch(stackCacheState & 0xFF) {
+			case 0xFF:
+				return "AVAILABLE";
+			case 0xFE:
+				return "IN USE";
+			case 0xFD:
+				return "DISABLED";
+			default:
+				if ((stackCacheState & 0x10) == 0x10) {
+					return "REF " + (stackCacheState & 0x0F);
+				} else {
+					return "INT " + (stackCacheState & 0x0F);					
+				}
+		}
+    }
     private String AvrInstruction2XmlString(AvrInstruction avrInstruction) {
     	return String.format("<avrInstruction address=\"%8s\" opcode=\"%10s\" isBranchThroughBranchTable=\"%5s\" branchTarget=\"%3d\" text=\"%s\" />",
 			"0x" + Integer.toHexString(avrInstruction.Address),
@@ -543,11 +570,20 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			buf.append("            startAddress=\"0x" + Integer.toHexString(method.StartAddress) + "\"\n\r");
 			buf.append("            endAddress=\"0x" + Integer.toHexString(method.EndAddress) + "\"\n\r");
 			buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"\n\r");
-			buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\" >\n\r");			
+			buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\" >\n\r");
 			buf.append("        <javaInstructions>\n\r");
 			int instructionIndex = 0;
 			for (JavaInstruction javaInstruction : method.JavaInstructions) {
 				buf.append("            <javaInstruction index=\"" + instructionIndex++ + "\" text=\"" + javaInstruction.Text + "\">\n\r");
+				buf.append("                <stackCacheState>\n\r");
+				if (javaInstruction.StackCacheState != null) {
+			        int i = 0;
+					for (Short stackCacheState : javaInstruction.StackCacheState) {
+						buf.append(String.format("                    R%2d: %10s\n\r", i, StackCacheState2String(stackCacheState)));
+						i += 2;
+					}					
+				}
+				buf.append("                </stackCacheState>\n\r");
 				buf.append("                <unoptimisedAvr>\n\r");
 				for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
 					buf.append("                    " + AvrInstruction2XmlString(avrInstruction) + "\n\r");
