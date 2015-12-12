@@ -539,11 +539,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
     private String StackCacheState2String(short stackCacheState) {
 		switch(stackCacheState & 0xFF) {
 			case 0xFF:
-				return "AVAILABLE";
+				return "     ";
 			case 0xFE:
-				return "IN USE";
+				return "USED ";
 			case 0xFD:
-				return "DISABLED";
+				return "#####";
 			default:
 				if ((stackCacheState & 0x10) == 0x10) {
 					return "REF " + (stackCacheState & 0x0F);
@@ -579,10 +579,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
 				if (javaInstruction.StackCacheState != null) {
 			        int i = 0;
 					for (Short stackCacheState : javaInstruction.StackCacheState) {
-						buf.append(String.format("                    R%2d: %10s\n\r", i, StackCacheState2String(stackCacheState)));
+						buf.append(String.format("  (R%2d:%5s)", i, StackCacheState2String(stackCacheState)));
 						i += 2;
 					}					
 				}
+				buf.append("\n\r");
 				buf.append("                </stackCacheState>\n\r");
 				buf.append("                <unoptimisedAvr>\n\r");
 				for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
