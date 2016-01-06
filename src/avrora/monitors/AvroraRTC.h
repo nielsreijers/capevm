@@ -12,15 +12,16 @@
 #endif
 volatile uint8_t rtcMonitorVariable[8];
 
-#define AVRORA_RTC_SINGLEWORDINSTRUCTION 1;
-#define AVRORA_RTC_DOUBLEWORDINSTRUCTION 2;
-#define AVRORA_RTC_STARTMETHOD           3;
-#define AVRORA_RTC_ENDMETHOD             4;
-#define AVRORA_RTC_JAVAOPCODE            5;
-#define AVRORA_RTC_PATCHINGBRANCHES_ON   6;
-#define AVRORA_RTC_PATCHINGBRANCHES_OFF  7;
-#define AVRORA_RTC_STACKCACHESTATE       8;
-
+#define AVRORA_RTC_SINGLEWORDINSTRUCTION     1;
+#define AVRORA_RTC_DOUBLEWORDINSTRUCTION     2;
+#define AVRORA_RTC_STARTMETHOD               3;
+#define AVRORA_RTC_ENDMETHOD                 4;
+#define AVRORA_RTC_JAVAOPCODE                5;
+#define AVRORA_RTC_PATCHINGBRANCHES_ON       6;
+#define AVRORA_RTC_PATCHINGBRANCHES_OFF      7;
+#define AVRORA_RTC_STACKCACHESTATE           8;
+#define AVRORA_RTC_STACKCACHEVALUETAGS       9;
+#define AVRORA_RTC_INIT                      42;
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
 	*((uint16_t *)(rtcMonitorVariable+1)) = opcode;
@@ -74,5 +75,15 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheState(uint8_t *cachestat
 	rtcMonitorVariable[1] = ((uint16_t)cachestate) & 0xFF;
 	rtcMonitorVariable[2] = (((uint16_t)cachestate) >> 8)& 0xFF;
 	rtcMonitorVariable[0] = AVRORA_RTC_STACKCACHESTATE;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheValuetags(uint16_t *cachestate_valuetags)
+{
+	rtcMonitorVariable[1] = ((uint16_t)cachestate_valuetags) & 0xFF;
+	rtcMonitorVariable[2] = (((uint16_t)cachestate_valuetags) >> 8)& 0xFF;
+	rtcMonitorVariable[0] = AVRORA_RTC_STACKCACHEVALUETAGS;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCTraceInit()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_INIT;	
 }
 #endif

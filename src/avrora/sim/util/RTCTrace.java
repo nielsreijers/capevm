@@ -16,14 +16,16 @@ import cck.text.Terminal;
  * @see Counter
  */
 public class RTCTrace extends Simulator.Watch.Empty {
-	final static int AVRORA_RTC_SINGLEWORDINSTRUCTION = 1;
-	final static int AVRORA_RTC_DOUBLEWORDINSTRUCTION = 2;
-	final static int AVRORA_RTC_STARTMETHOD           = 3;
-	final static int AVRORA_RTC_ENDMETHOD             = 4;
-	final static int AVRORA_RTC_JAVAOPCODE            = 5;
-	final static int AVRORA_RTC_PATCHINGBRANCHES_ON   = 6;
-	final static int AVRORA_RTC_PATCHINGBRANCHES_OFF  = 7;
-	final static int AVRORA_RTC_STACKCACHESTATE       = 8;
+	final static int AVRORA_RTC_SINGLEWORDINSTRUCTION     = 1;
+	final static int AVRORA_RTC_DOUBLEWORDINSTRUCTION     = 2;
+	final static int AVRORA_RTC_STARTMETHOD               = 3;
+	final static int AVRORA_RTC_ENDMETHOD                 = 4;
+	final static int AVRORA_RTC_JAVAOPCODE                = 5;
+	final static int AVRORA_RTC_PATCHINGBRANCHES_ON       = 6;
+	final static int AVRORA_RTC_PATCHINGBRANCHES_OFF      = 7;
+	final static int AVRORA_RTC_STACKCACHESTATE           = 8;
+	final static int AVRORA_RTC_STACKCACHEVALUETAGS       = 9;
+	final static int AVRORA_RTC_INIT                      = 42;
 
 	final static LegacyDisassembler disasm = new LegacyDisassembler();
 
@@ -300,6 +302,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		public String Text;
 		public ArrayList<AvrInstruction> UnoptimisedAvr;
 		public ArrayList<Short> StackCacheState;
+		public ArrayList<Short> StackCacheValueTags;
 
 		public JavaInstruction() {
 			this.UnoptimisedAvr = new ArrayList<AvrInstruction>();
@@ -327,6 +330,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		}
 	}
 
+	private boolean initialised = false;
 	private int branchTargetCounter;
 	private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
 	boolean patchingBranches = false;
@@ -429,7 +433,23 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					currentMethod = methodImpls.get(methodImpls.size()-1);
 					currentMethod.lastJavaInstruction().StackCacheState = stackcachestate;
 				break;
-
+				case AVRORA_RTC_STACKCACHEVALUETAGS:
+					int stackcachevaluetags_addr = ((int)getDataInt8(a, data_addr+1) & 0xFF) + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8);
+					ArrayList<Short> stackcachevaluetags = new ArrayList<Short>();					
+					for (int i=0; i<16; i++) {
+						stackcachevaluetags.add((short)getDataInt16(a, stackcachevaluetags_addr+(2*i)));
+					}
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.lastJavaInstruction().StackCacheValueTags = stackcachevaluetags;
+				break;
+				case AVRORA_RTC_INIT:
+					if (this.initialised == true) {
+						// Init called twice: probably a crash
+		                Terminal.printRed("[avrora.rtc] init called more than once??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
+		                System.exit(-1);
+					}
+					this.initialised = true;
+				break;
 				default:
 					Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
 				break;
@@ -552,6 +572,50 @@ public class RTCTrace extends Simulator.Watch.Empty {
 				}
 		}
     }
+    private String StackCacheValueTag2String(short stackCacheValueTag) {
+    	// 9 char
+    	String typeString     ="  ";
+    	String datatypeString ="  ";
+
+// #define RTC_VALUETAG_TYPE_LOCAL     0x0000
+// #define RTC_VALUETAG_TYPE_STATIC    0x4000
+// #define RTC_VALUETAG_TYPE_CONSTANT  0x8000
+// #define RTC_VALUETAG_UNUSED         0xFFFF
+// #define RTC_VALUETAG_DATATYPE_REF   0x0000
+// #define RTC_VALUETAG_DATATYPE_SHORT 0x1000
+// #define RTC_VALUETAG_DATATYPE_INT   0x2000
+// #define RTC_VALUETAG_DATATYPE_INT_H 0x3000
+
+    	if ((stackCacheValueTag&0xFFFF) == 0xFFFF)
+    		return "";
+
+		int type = (stackCacheValueTag >> 14) & 0x3;
+		switch(type) {
+			case 0:
+				typeString = "L"; break;
+			case 1:
+				typeString = "S"; break;
+			case 2:
+				typeString = "C"; break;
+			default:
+				typeString = String.format("%1d", type);
+		}
+		int datatype = (stackCacheValueTag >> 12) & 0x3;
+		switch(datatype) {
+			case 0:
+				datatypeString = "R"; break;
+			case 1:
+				datatypeString = "S"; break;
+			case 2:
+				datatypeString = "IH"; break;
+			case 3:
+				datatypeString = "IL"; break;
+			default:
+				datatypeString = String.format("%2d", datatype);
+		}
+
+		return String.format("%1s %2s%5d", typeString, datatypeString, stackCacheValueTag & 0x0FFF);
+    }
     private String AvrInstruction2XmlString(AvrInstruction avrInstruction) {
     	return String.format("<avrInstruction address=\"%8s\" opcode=\"%10s\" isBranchThroughBranchTable=\"%5s\" branchTarget=\"%3d\" text=\"%s\" />",
 			"0x" + Integer.toHexString(avrInstruction.Address),
@@ -582,8 +646,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
 						buf.append(String.format("  (R%2d:%5s)", i, StackCacheState2String(stackCacheState)));
 						i += 2;
 					}					
+					buf.append("\n\r");
 				}
-				buf.append("\n\r");
+				if (javaInstruction.StackCacheValueTags != null) {
+			        int i = 0;
+					for (Short stackCacheValueTag : javaInstruction.StackCacheValueTags) {
+						buf.append(String.format("  (%9s)", StackCacheValueTag2String(stackCacheValueTag)));
+						i += 2;
+					}					
+					buf.append("\n\r");
+				}
 				buf.append("                </stackCacheState>\n\r");
 				buf.append("                <unoptimisedAvr>\n\r");
 				for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
