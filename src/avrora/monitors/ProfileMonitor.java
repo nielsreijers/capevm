@@ -138,22 +138,22 @@ public class ProfileMonitor extends MonitorFactory {
         public class CCProbe implements Simulator.Probe {
             protected long timeBegan;
 
-            private void printCall(int pc, AbstractInstr inst) {
+            private void printCall(int pc, int sp, AbstractInstr inst) {
                 String padding = new String(new char[callstack.size()*2]).replace('\0', ' ');
                 if (inst instanceof LegacyInstr.CALL) {
                     int target = ((LegacyInstr.CALL)inst).imm1;
-                    Terminal.println(String.format("%sCALL at 0x%s to 0x%s", padding, Integer.toHexString(pc), Integer.toHexString(target*2)));
+                    Terminal.println(String.format("%sCALL at 0x%s to 0x%s (SP 0x%s)", padding, Integer.toHexString(pc), Integer.toHexString(target*2), Integer.toHexString(sp)));
                 }
                 if (inst instanceof LegacyInstr.RCALL) {
                     int offset = ((LegacyInstr.RCALL)inst).imm1;
                     LegacyInstr.RCALL callInst = (LegacyInstr.RCALL)inst;
-                    Terminal.println(String.format("%sRCALL at 0x%s by 0x%s to 0x%s", padding, Integer.toHexString(pc), Integer.toHexString(offset*2), Integer.toHexString(pc+2+offset*2)));
+                    Terminal.println(String.format("%sRCALL at 0x%s by 0x%s to 0x%s (SP 0x%s)", padding, Integer.toHexString(pc), Integer.toHexString(offset*2), Integer.toHexString(pc+2+offset*2), Integer.toHexString(sp)));
                 }
                 if (inst instanceof LegacyInstr.ICALL) {
-                   Terminal.println(String.format("%sICALL at 0x%s to ??? (todo)", padding, Integer.toHexString(pc)));
+                   Terminal.println(String.format("%sICALL at 0x%s to ??? (todo) (SP 0x%s)", padding, Integer.toHexString(pc), Integer.toHexString(sp)));
                 }
                 if (inst instanceof LegacyInstr.EICALL) {
-                    Terminal.println(String.format("%sEICALL at 0x%s to ??? (todo)", padding, Integer.toHexString(pc)));
+                    Terminal.println(String.format("%sEICALL at 0x%s to ??? (todo) (SP 0x%s)", padding, Integer.toHexString(pc), Integer.toHexString(sp)));
                 }
             }
             private void printRet(int pc, int returnToPc) {
@@ -167,7 +167,10 @@ public class ProfileMonitor extends MonitorFactory {
 
                 if (expectedNextPc != 0 && pc != expectedNextPc) {
                     if (pc != 0x40) { // We may be at 0x40 because of an interrupt
-                        Terminal.println(String.format("UNEXPECTED PC: 0x%s!! (expecting 0x%s)", Integer.toHexString(pc), Integer.toHexString(expectedNextPc)));
+                        Terminal.println(String.format("UNEXPECTED PC: 0x%s!!", Integer.toHexString(pc)));
+                        Terminal.println(String.format("Expected PC: 0x%s", Integer.toHexString(expectedNextPc)));
+                        Terminal.println(String.format("Current SP: 0x%s ", Integer.toHexString(state.getSP())));
+                        System.exit(0);
                     }
                     expectedNextPc = 0;
                 } else {
@@ -178,7 +181,7 @@ public class ProfileMonitor extends MonitorFactory {
                         || (inst instanceof LegacyInstr.RCALL && ((LegacyInstr.RCALL)inst).imm1 != 0) // RCALL +0 is used to reserve stack space, but isn't actually a call.
                         || inst instanceof LegacyInstr.ICALL
                         || inst instanceof LegacyInstr.EICALL) {
-                    // printCall(pc, inst);
+                    // printCall(pc, state.getSP(), inst);
                     CallStackRecord r = new CallStackRecord();
                     r.sourcePC = pc;
                     r.returnAddress = inst instanceof LegacyInstr.CALL ? pc+4 : pc+2;
