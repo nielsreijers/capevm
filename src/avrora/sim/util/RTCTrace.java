@@ -253,6 +253,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			case 217: return "JVM_S2L";
 			case 218: return "JVM_LCMP";
 			case 219: return "JVM_BRTARGET		" + branchTargetCounter++;
+			case 220: return "JVM_MARKLOOP_START";
+			case 221: return "JVM_MARKLOOP_END";
 			default: return "UNKNOWN OPCODE " + opcode;
 		}
 	}
