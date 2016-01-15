@@ -568,11 +568,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
     private String StackCacheState2String(short stackCacheState) {
 		switch(stackCacheState & 0xFF) {
 			case 0xFF:
-				return "     ";
+				return "";
 			case 0xFE:
-				return "USED ";
+				return "USED";
 			case 0xFD:
-				return "#####";
+				return "---------";
 			default:
 				if ((stackCacheState & 0x10) == 0x10) {
 					return "REF " + (stackCacheState & 0x0F);
@@ -648,39 +648,43 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			int instructionIndex = 0;
 			for (JavaInstruction javaInstruction : method.JavaInstructions) {
 				buf.append("            <javaInstruction index=\"" + instructionIndex++ + "\" text=\"" + javaInstruction.Text + "\">\n\r");
-				buf.append("                <stackCacheState>\n\r");
-				if (javaInstruction.StackCachePinnedRegisters != null) {
-					for (int i = 0; i<16; i++) {
-						if ((javaInstruction.StackCachePinnedRegisters & (1 << i)) != 0) {
-							buf.append("   PINNED    ");
-						} else {
-							buf.append("             ");
-						}
-					}					
-					buf.append("\n\r");
-				}
-				if (javaInstruction.StackCacheState != null) {
-			        int i = 0;
-					for (Short stackCacheState : javaInstruction.StackCacheState) {
-						buf.append(String.format("  (R%2d:%5s)", i, StackCacheState2String(stackCacheState)));
-						i += 2;
-					}					
-					buf.append("\n\r");
-				}
-				if (javaInstruction.StackCacheValueTags != null) {
-			        int i = 0;
-					for (Short stackCacheValueTag : javaInstruction.StackCacheValueTags) {
-						buf.append(String.format("  (%9s)", StackCacheValueTag2String(stackCacheValueTag)));
-						i += 2;
-					}					
-					buf.append("\n\r");
-				}
-				buf.append("                </stackCacheState>\n\r");
 				buf.append("                <unoptimisedAvr>\n\r");
 				for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
 					buf.append("                    " + AvrInstruction2XmlString(avrInstruction) + "\n\r");
 				}
 				buf.append("                </unoptimisedAvr>\n\r");
+				buf.append("                <stackCacheState>\n\r");
+				if (javaInstruction.StackCachePinnedRegisters != null) {
+					for (int i = 0; i<16; i++) {
+						if ((javaInstruction.StackCachePinnedRegisters & (1 << i)) != 0) {
+							buf.append("| PINNED    ");
+						} else {
+							buf.append("|           ");
+						}
+					}					
+					buf.append("|\n\r");
+				}
+				for (int i = 0; i<16; i++) {
+					buf.append(String.format("| R%2d       ", i*2));
+				}
+				buf.append("|\n\r");
+				if (javaInstruction.StackCacheState != null) {
+			        int i = 0;
+					for (Short stackCacheState : javaInstruction.StackCacheState) {
+						buf.append(String.format("| %-10s", StackCacheState2String(stackCacheState)));
+						i += 2;
+					}					
+					buf.append("|\n\r");
+				}
+				if (javaInstruction.StackCacheValueTags != null) {
+			        int i = 0;
+					for (Short stackCacheValueTag : javaInstruction.StackCacheValueTags) {
+						buf.append(String.format("| %9s ", StackCacheValueTag2String(stackCacheValueTag)));
+						i += 2;
+					}					
+					buf.append("|\n\r");
+				}
+				buf.append("                </stackCacheState>\n\r");
 				buf.append("            </javaInstruction>\n\r");
 			}
 			buf.append("        </javaInstructions>\n\r");
