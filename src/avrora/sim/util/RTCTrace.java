@@ -25,6 +25,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_PATCHINGBRANCHES_OFF      = 7;
 	final static int AVRORA_RTC_STACKCACHESTATE           = 8;
 	final static int AVRORA_RTC_STACKCACHEVALUETAGS       = 9;
+	final static int AVRORA_RTC_STACKCACHEPINNEDREGISTERS = 10;
 	final static int AVRORA_RTC_INIT                      = 42;
 
 	final static LegacyDisassembler disasm = new LegacyDisassembler();
@@ -305,6 +306,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		public ArrayList<AvrInstruction> UnoptimisedAvr;
 		public ArrayList<Short> StackCacheState;
 		public ArrayList<Short> StackCacheValueTags;
+		public Integer StackCachePinnedRegisters;
 
 		public JavaInstruction() {
 			this.UnoptimisedAvr = new ArrayList<AvrInstruction>();
@@ -443,6 +445,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					}
 					currentMethod = methodImpls.get(methodImpls.size()-1);
 					currentMethod.lastJavaInstruction().StackCacheValueTags = stackcachevaluetags;
+				break;
+				case AVRORA_RTC_STACKCACHEPINNEDREGISTERS:
+					int pinnedregisters = ((int)getDataInt8(a, data_addr+1) & 0xFF) + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8);
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.lastJavaInstruction().StackCachePinnedRegisters = pinnedregisters;
 				break;
 				case AVRORA_RTC_INIT:
 					if (this.initialised == true) {
@@ -642,6 +649,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			for (JavaInstruction javaInstruction : method.JavaInstructions) {
 				buf.append("            <javaInstruction index=\"" + instructionIndex++ + "\" text=\"" + javaInstruction.Text + "\">\n\r");
 				buf.append("                <stackCacheState>\n\r");
+				if (javaInstruction.StackCachePinnedRegisters != null) {
+					for (int i = 0; i<16; i++) {
+						if ((javaInstruction.StackCachePinnedRegisters & (1 << i)) != 0) {
+							buf.append("   PINNED    ");
+						} else {
+							buf.append("             ");
+						}
+					}					
+					buf.append("\n\r");
+				}
 				if (javaInstruction.StackCacheState != null) {
 			        int i = 0;
 					for (Short stackCacheState : javaInstruction.StackCacheState) {

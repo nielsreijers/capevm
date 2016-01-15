@@ -33,6 +33,7 @@
 package avrora.sim.util;
 
 import avrora.sim.*;
+import avrora.arch.legacy.*;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 
@@ -63,6 +64,7 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_PRINT_BINARY_HEX_DUMPS           = 0x7;
     final byte AVRORA_WRITE_CHAR_BUFFER                = 0xA;
     final byte AVRORA_PRINT_CHAR_BUFFER                = 0xB;
+    final byte AVRORA_PRINT_R1                         = 0xC;
 
     public MemPrint(int b, int m, String l) {
         base = b;
@@ -182,6 +184,10 @@ public class MemPrint extends Simulator.Watch.Empty {
                     fil.append(charbuffer.toString());
                     buf.append(charbuffer.toString());
                     charbuffer = new StringBuilder();
+                    break;
+                case AVRORA_PRINT_R1:
+                    fil.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
+                    buf.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
                     break;
             }
 
