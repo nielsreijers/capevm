@@ -26,6 +26,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_STACKCACHESTATE           = 8;
 	final static int AVRORA_RTC_STACKCACHEVALUETAGS       = 9;
 	final static int AVRORA_RTC_STACKCACHEPINNEDREGISTERS = 10;
+	final static int AVRORA_RTC_STACKCACHESKIPINSTRUCTION = 11;
 	final static int AVRORA_RTC_INIT                      = 42;
 
 	final static LegacyDisassembler disasm = new LegacyDisassembler();
@@ -307,6 +308,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		public ArrayList<Short> StackCacheState;
 		public ArrayList<Short> StackCacheValueTags;
 		public Integer StackCachePinnedRegisters;
+		public Integer StackCacheSkipInstructionReason;
 
 		public JavaInstruction() {
 			this.UnoptimisedAvr = new ArrayList<AvrInstruction>();
@@ -450,6 +452,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					int pinnedregisters = ((int)getDataInt8(a, data_addr+1) & 0xFF) + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8);
 					currentMethod = methodImpls.get(methodImpls.size()-1);
 					currentMethod.lastJavaInstruction().StackCachePinnedRegisters = pinnedregisters;
+				break;
+				case AVRORA_RTC_STACKCACHESKIPINSTRUCTION:
+					int reason = (int)getDataInt8(a, data_addr+1);
+					currentMethod = methodImpls.get(methodImpls.size()-1);
+					currentMethod.lastJavaInstruction().StackCacheSkipInstructionReason = reason;
 				break;
 				case AVRORA_RTC_INIT:
 					if (this.initialised == true) {
@@ -684,6 +691,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					}					
 					buf.append("|\n\r");
 				}
+				if (javaInstruction.StackCacheSkipInstructionReason != null) {
+					buf.append("                SKIP REASON: " + javaInstruction.StackCacheSkipInstructionReason + "\n\r");					
+				}
 				buf.append("                </stackCacheState>\n\r");
 				buf.append("            </javaInstruction>\n\r");
 			}
@@ -710,13 +720,25 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
 
     	// Scan branch target addresses
-    	int address = method.StartAddress;
-    	int i = 0;
-		while (address < method.StartAddress+numberOfBranchTargets*2) {
-			int wordOffsetFromFunctionStart = getProgramInt16(a, address);
-			int branchTargetAddress = method.StartAddress + 2*wordOffsetFromFunctionStart;
-			method.BranchTargets.add(branchTargetAddress);
-			address += 2;
+    	int address;
+		if (true) { // NOP optimisation? Then there will be two branchtables, one before, and one after removing the NOPs. The second will contain the right addresses.
+			address = method.StartAddress + numberOfBranchTargets*2;
+	    	int i = 0;
+			while (address < method.StartAddress+numberOfBranchTargets*4) {
+				int wordOffsetFromFunctionStart = getProgramInt16(a, address);
+				int branchTargetAddress = method.StartAddress + 2*wordOffsetFromFunctionStart;
+				method.BranchTargets.add(branchTargetAddress);
+				address += 2;
+			}
+		} else {
+			address = method.StartAddress;
+	    	int i = 0;
+			while (address < method.StartAddress+numberOfBranchTargets*2) {
+				int wordOffsetFromFunctionStart = getProgramInt16(a, address);
+				int branchTargetAddress = method.StartAddress + 2*wordOffsetFromFunctionStart;
+				method.BranchTargets.add(branchTargetAddress);
+				address += 2;
+			}
 		}
 
 		// Print compiled method, and add branch target annotations where necessary.

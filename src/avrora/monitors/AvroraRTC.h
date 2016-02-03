@@ -22,6 +22,7 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_STACKCACHESTATE           8
 #define AVRORA_RTC_STACKCACHEVALUETAGS       9
 #define AVRORA_RTC_STACKCACHEPINNEDREGISTERS 10
+#define AVRORA_RTC_STACKCACHESKIPINSTRUCTION 11
 #define AVRORA_RTC_INIT                      42
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
@@ -92,5 +93,10 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStackCachePinnedRegisters(uint16_t
 	rtcMonitorVariable[1] = cachestate_pinnedregisters & 0xFF;
 	rtcMonitorVariable[2] = (cachestate_pinnedregisters >> 8) & 0xFF;
 	rtcMonitorVariable[0] = AVRORA_RTC_STACKCACHEPINNEDREGISTERS;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheSkipInstruction(uint8_t reason)
+{
+	rtcMonitorVariable[1] = reason;
+	rtcMonitorVariable[0] = AVRORA_RTC_STACKCACHESKIPINSTRUCTION;	
 }
 #endif

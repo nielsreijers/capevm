@@ -65,6 +65,7 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_WRITE_CHAR_BUFFER                = 0xA;
     final byte AVRORA_PRINT_CHAR_BUFFER                = 0xB;
     final byte AVRORA_PRINT_R1                         = 0xC;
+    final byte AVRORA_PRINT_SP                         = 0xD;
 
     public MemPrint(int b, int m, String l) {
         base = b;
@@ -188,6 +189,10 @@ public class MemPrint extends Simulator.Watch.Empty {
                 case AVRORA_PRINT_R1:
                     fil.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
                     buf.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
+                    break;
+                case AVRORA_PRINT_SP:
+                    fil.append("SP:" + state.getSP());
+                    buf.append("SP:" + state.getSP());
                     break;
             }
 
