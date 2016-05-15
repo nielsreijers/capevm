@@ -52,10 +52,6 @@ implements   AttributeVisitor,
     static final int METHOD_DUMMY_START_LINE_NUMBER = 0;
     static final int INLINED_METHOD_END_LINE_NUMBER = -1;
 
-    private static final int MAXIMUM_INLINED_CODE_LENGTH       = Integer.parseInt(System.getProperty("maximum.inlined.code.length",      "8"));
-    private static final int MAXIMUM_RESULTING_CODE_LENGTH_JSE = Integer.parseInt(System.getProperty("maximum.resulting.code.length", "7000"));
-    private static final int MAXIMUM_RESULTING_CODE_LENGTH_JME = Integer.parseInt(System.getProperty("maximum.resulting.code.length", "2000"));
-
     //*
     private static final boolean DEBUG = false;
     /*/
@@ -182,6 +178,10 @@ implements   AttributeVisitor,
 
     public void visitCodeAttribute0(Clazz clazz, Method method, CodeAttribute codeAttribute)
     {
+        int MAXIMUM_INLINED_CODE_LENGTH       = Integer.parseInt(System.getProperty("maximum.inlined.code.length",      "8"));
+        int MAXIMUM_RESULTING_CODE_LENGTH_JSE = Integer.parseInt(System.getProperty("maximum.resulting.code.length", "7000"));
+        int MAXIMUM_RESULTING_CODE_LENGTH_JME = Integer.parseInt(System.getProperty("maximum.resulting.code.length", "2000"));
+
         if (!inlining)
         {
 //            codeAttributeComposer.DEBUG = DEBUG =
@@ -248,6 +248,13 @@ implements   AttributeVisitor,
 
             inlined    = true;
             inlinedAny = true;
+        } else {
+            if (inlineSingleInvocations && MethodInvocationMarker.getInvocationCount(method) != 1) System.err.println("NOT A SINGLE INVOCATION");
+            if (!inlineSingleInvocations && codeAttribute.u4codeLength > MAXIMUM_INLINED_CODE_LENGTH) System.err.println("TOO LONG: " + codeAttribute.u4codeLength + " > " + MAXIMUM_INLINED_CODE_LENGTH);
+            if (!(estimatedResultingCodeLength + codeAttribute.u4codeLength <
+                 (microEdition ?
+                     MAXIMUM_RESULTING_CODE_LENGTH_JME :
+                     MAXIMUM_RESULTING_CODE_LENGTH_JSE))) System.err.println("RESULT TOO LONG");
         }
     }
 
@@ -628,6 +635,7 @@ implements   AttributeVisitor,
              programClass.equals(targetClass)                        ||
              initializedSuperClasses(targetClass).containsAll(initializedSuperClasses(programClass))))
         {
+            System.err.println("MAY INLINE " + programMethod.getName(programClass) + " (max length: " + Integer.parseInt(System.getProperty("maximum.inlined.code.length",      "8")) + ")");
             boolean oldInlining = inlining;
             inlining = true;
             inliningMethods.push(programMethod);
@@ -649,6 +657,38 @@ implements   AttributeVisitor,
         else if (programMethod.getName(programClass).equals(ClassConstants.METHOD_NAME_INIT))
         {
             uninitializedObjectCount--;
+            System.err.print("WON'T INLINE (" + programMethod.getName(programClass));
+                    if(!(            !KeepMarker.isKept(programMethod)                                                     )) System.err.print("1 ");
+                    if(!(            (accessFlags & (ClassConstants.ACC_PRIVATE |
+                                                ClassConstants.ACC_STATIC  |
+                                                ClassConstants.ACC_FINAL)) != 0                                       )) System.err.print("2 ");
+                    if(!(            (accessFlags & (ClassConstants.ACC_SYNCHRONIZED |
+                                                ClassConstants.ACC_NATIVE       |
+                                                ClassConstants.ACC_ABSTRACT)) == 0                                    )) System.err.print("3 ");
+                    if(!(            !programMethod.getName(programClass).equals(ClassConstants.METHOD_NAME_INIT)        )) System.err.print("4 ");
+                    if(!(            (!programMethod.equals(targetMethod) ||
+                                 !programClass.equals(targetClass))                                                   )) System.err.print("5 ");
+                    if(!(           !inliningMethods.contains(programMethod)                                              )) System.err.print("6 ");
+                    if(!(        targetClass.u4version >= programClass.u4version                                       )) System.err.print("7 ");
+                    if(!(     (!SuperInvocationMarker.invokesSuperMethods(programMethod) &&
+                                 !DynamicInvocationMarker.invokesDynamically(programMethod) ||
+                                 programClass.equals(targetClass))                                                    )) System.err.print("8 ");
+                    if(!(  (!BackwardBranchMarker.branchesBackward(programMethod) ||
+                                 uninitializedObjectCount == 0)                                                       )) System.err.print("9 ");
+                    if(!(            (allowAccessModification ||
+                                 ((!AccessMethodMarker.accessesPrivateCode(programMethod) ||
+                                   programClass.equals(targetClass)) &&
+                                  (!AccessMethodMarker.accessesPackageCode(programMethod) ||
+                                   ClassUtil.internalPackageName(programClass.getName()).equals(
+                                   ClassUtil.internalPackageName(targetClass.getName())))))                           )) System.err.print("10 ");
+                    if(!(         (!AccessMethodMarker.accessesProtectedCode(programMethod) ||
+                                 programClass.equals(targetClass))                                                    )) System.err.print("11 ");
+                    if(!(      (!CatchExceptionMarker.catchesExceptions(programMethod) ||
+                                 emptyInvokingStack)                                                                  )) System.err.print("12 ");
+                    if(!(   ((accessFlags & ClassConstants.ACC_STATIC) == 0 ||
+                                 programClass.equals(targetClass)                        ||
+                                 initializedSuperClasses(targetClass).containsAll(initializedSuperClasses(programClass))) )) System.err.print("13 ");
+            System.err.println(")");
         }
     }
 
