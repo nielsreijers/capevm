@@ -585,7 +585,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	private boolean initialised = false;
 	private int branchTargetCounter;
 	private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
-	boolean patchingBranches = false;
+	private boolean patchingBranches = false;
 
     /**
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.

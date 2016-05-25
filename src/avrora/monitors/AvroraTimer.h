@@ -67,21 +67,42 @@
 /* Try the C99 keyword instead. */
 # define AVRORA_TIMER_INLINE inline
 #endif
-volatile int8_t ctimerWatch;
+volatile int8_t ctimerWatch[2];
+
+#define AVRORA_TIMER_START_MAIN      1
+#define AVRORA_TIMER_STOP_MAIN       2
+#define AVRORA_TIMER_SET_MAIN_NUMBER 3
+#define AVRORA_TIMER_START_GC        4
+#define AVRORA_TIMER_STOP_GC         5
+#define AVRORA_TIMER_MARK            6
 
 // -1 starts the timer
 // any positive number stops the timer and reports that number (for scripting purposes)
 static AVRORA_TIMER_INLINE void avroraStartTimer()
 {
-	ctimerWatch = -1;
+	ctimerWatch[0] = AVRORA_TIMER_START_MAIN;
 }
 static AVRORA_TIMER_INLINE void avroraStopTimer()
 {
-	ctimerWatch = -2;
+	ctimerWatch[0] = AVRORA_TIMER_STOP_MAIN;
 }
-static AVRORA_TIMER_INLINE void avroraSetTimerNumber(int8_t number) // number should be 
+static AVRORA_TIMER_INLINE void avroraSetTimerNumber(int8_t number)
 {
-	ctimerWatch = number;
+    ctimerWatch[1] = number;
+    ctimerWatch[0] = AVRORA_TIMER_SET_MAIN_NUMBER;
+}
+static AVRORA_TIMER_INLINE void avroraStartGarbageCollectionTimer()
+{
+    ctimerWatch[0] = AVRORA_TIMER_START_GC;
+}
+static AVRORA_TIMER_INLINE void avroraStopGarbageCollectionTimer()
+{
+    ctimerWatch[0] = AVRORA_TIMER_STOP_GC;
+}
+static AVRORA_TIMER_INLINE void avroraTimerMark(int8_t number)
+{
+    ctimerWatch[1] = number;
+    ctimerWatch[0] = AVRORA_TIMER_MARK;
 }
 
 
