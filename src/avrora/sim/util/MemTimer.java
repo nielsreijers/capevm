@@ -43,22 +43,103 @@ import cck.text.Terminal;
  * @author John Regehr
  */
 public class MemTimer extends Simulator.Watch.Empty {
-    private static final byte AVRORA_TIMER_START_MAIN      = 1;
-    private static final byte AVRORA_TIMER_STOP_MAIN       = 2;
-    private static final byte AVRORA_TIMER_SET_MAIN_NUMBER = 3;
-    private static final byte AVRORA_TIMER_START_GC        = 4;
-    private static final byte AVRORA_TIMER_STOP_GC         = 5;
-    private static final byte AVRORA_TIMER_MARK            = 6;
+    private static final byte AVRORA_TIMER_START_CURRENT      = 1;
+    private static final byte AVRORA_TIMER_STOP_CURRENT       = 2;
+    private static final byte AVRORA_TIMER_SET_CURRENT_NUMBER = 3;
+    private static final byte AVRORA_TIMER_START_SPECIFIC     = 4;
+    private static final byte AVRORA_TIMER_STOP_SPECIFIC      = 5;
+    private static final byte AVRORA_TIMER_MARK               = 6;
+
+    private static final byte AVRORA_DEFAULT_TIMER            =   1;
+    private static final byte AVRORA_BENCH_NATIVE_TIMER       = 101;
+    private static final byte AVRORA_BENCH_RTC_TIMER          = 102;
+    private static final byte AVRORA_BENCH_JAVA_TIMER         = 103;
+    private static final byte AVRORA_GC_TIMER                 = 104;
+    private static final byte AVRORA_REPROG_TIMER             = 105;
+    private static final byte AVRORA_RTC_COMPILE_TIMER        = 106;
+
 
     int base;
-    long main_timer_start_time = 0;
-    int main_timer_number = 1;
-    long gc_timer_start_time = 0;
-    long gc_timer_total_time = 0;
+    int current_timer_number = AVRORA_DEFAULT_TIMER;
+    long timers_start_time[] = new long[256];
+    long timers_total_time[] = new long[256];
+    long timers_total_count[] = new long[256];
     long mark_timer_start_time = 0;
 
     public MemTimer(int b) {
         base = b;
+    }
+
+    private StringBuffer getStringBuffer(State state) {
+        StringBuffer buf = new StringBuffer();
+        SimUtil.getIDTimeString(buf, state.getSimulator());
+        buf.append("[avrora.c-timer] ");
+        return buf;
+    }
+
+    private boolean timerIsActive(int timer) {
+        if (timer == AVRORA_GC_TIMER) {
+            // Only count GC cycles spent when running RTC code
+            return timers_start_time[AVRORA_BENCH_RTC_TIMER] != 0;
+        }
+        return true;
+    }
+
+    private String timerName(int timer) {
+        switch(timer) {
+            case AVRORA_DEFAULT_TIMER: return "DEFAULT";
+            case AVRORA_BENCH_NATIVE_TIMER: return "NATIVE";
+            case AVRORA_BENCH_RTC_TIMER: return "RTC";
+            case AVRORA_BENCH_JAVA_TIMER: return "JAVA";
+            case AVRORA_GC_TIMER: return "GC";
+            case AVRORA_REPROG_TIMER: return "REPROG";
+            case AVRORA_RTC_COMPILE_TIMER: return "RTC COMPILATION";
+            default: return "UNKNOWN TIMER " + timer;
+        }
+    }
+
+    private void startTimer(int timer, State state) {
+        if (!timerIsActive(timer)) {
+            return;
+        }
+
+        if (timers_start_time[timer] != 0) {
+            Terminal.printRed("multiple starts in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
+            System.exit(-1);
+        }
+
+        timers_start_time[timer] = state.getCycles();
+
+        if (timer != AVRORA_REPROG_TIMER) {
+            StringBuffer buf = getStringBuffer(state);
+            buf.append("start timer " + timerName(timer));
+            Terminal.printRed(buf.toString());
+            Terminal.nextln();
+        }
+    }
+
+    private void stopTimer(int timer, State state) {
+        if (!timerIsActive(timer)) {
+            return;
+        }
+
+        if (timers_start_time[timer] == 0) {
+            Terminal.printRed("multiple stops in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
+            System.exit(-1);
+        }
+
+        long stop_time = state.getCycles();
+        long duration = stop_time - timers_start_time[timer];
+        timers_total_time[timer] += duration;
+        timers_total_count[timer] += 1;
+        timers_start_time[timer] = 0;        
+
+        if (timer != AVRORA_REPROG_TIMER) {
+            StringBuffer buf = getStringBuffer(state);
+            buf.append("stop timer " + timerName(timer) + ": " + String.valueOf(duration) + " cycles. Total time: " + String.valueOf(timers_total_time[timer]) + " cycles.");
+            Terminal.printRed(buf.toString());
+            Terminal.nextln();
+        }
     }
 
     public void fireBeforeWrite(State state, int data_addr, byte value) {
@@ -69,77 +150,50 @@ public class MemTimer extends Simulator.Watch.Empty {
 
         Simulator sim = state.getSimulator();
         AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
-        StringBuffer buf = new StringBuffer();
-        SimUtil.getIDTimeString(buf, sim);
-        buf.append("[avrora.c-timer] ");
+        StringBuffer buf = getStringBuffer(state);
 
         switch(value) {
-            case AVRORA_TIMER_START_MAIN:
-                if (main_timer_start_time != 0) {
-                    Terminal.printRed("multiple starts in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
-                    System.exit(-1);
-                    // buf.append("multiple starts in a row??");
-                } else {
-                    main_timer_start_time = state.getCycles();
-                    buf.append("start");
-                }
+            case AVRORA_TIMER_START_CURRENT:
+                startTimer(this.current_timer_number, state);
             break;
-            case AVRORA_TIMER_STOP_MAIN:
-                if (main_timer_start_time == 0) {
-                    buf.append("multiple stops in a row??");
-                } else {
-                    long stop_time = state.getCycles();
-                    long duration = stop_time - main_timer_start_time;
-                    buf.append("timer number " + String.valueOf(main_timer_number) + ": " + String.valueOf(duration) + " cycles");
-                }
-                main_timer_start_time = 0;
+            case AVRORA_TIMER_STOP_CURRENT:
+                stopTimer(this.current_timer_number, state);
             break;
-            case AVRORA_TIMER_SET_MAIN_NUMBER:
-                this.main_timer_number = a.getDataByte(data_addr+1);
-            return;
-            case AVRORA_TIMER_START_GC:
-                if (main_timer_start_time == 0) { // We only care about garbage collection during benchmarks, so the main timer must be active
-                    return;
-                }
-                if (gc_timer_start_time != 0) {
-                    Terminal.printRed("multiple starts in a row??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
-                    System.exit(-1);
-                    // buf.append("multiple starts in a row??");
-                } else {
-                    gc_timer_start_time = state.getCycles();
-                    buf.append("GC start");
-                }
+            case AVRORA_TIMER_SET_CURRENT_NUMBER:
+                this.current_timer_number = a.getDataByte(data_addr+1);
             break;
-            case AVRORA_TIMER_STOP_GC:
-                if (main_timer_start_time == 0) { // We only care about garbage collection during benchmarks, so the main timer must be active
-                    return;
-                }
-                if (gc_timer_start_time == 0) {
-                    buf.append("GC timer multiple stops in a row??");
-                } else {
-                    long stop_time = state.getCycles();
-                    long duration = stop_time - gc_timer_start_time;
-                    gc_timer_total_time += duration;
-                    buf.append("GC ran for " + String.valueOf(duration) + " cycles. Total GC time " + String.valueOf(gc_timer_total_time) + " cycles.");
-                }
-                gc_timer_start_time = 0;
+            case AVRORA_TIMER_START_SPECIFIC:
+                startTimer(a.getDataByte(data_addr+1), state);
+            break;
+            case AVRORA_TIMER_STOP_SPECIFIC:
+                stopTimer(a.getDataByte(data_addr+1), state);
             break;
             case AVRORA_TIMER_MARK:
-                if (main_timer_start_time == 0) { // We only care about marks during benchmarks, so the main timer must be active
+                if (timers_start_time[AVRORA_BENCH_RTC_TIMER] != 0) { // We only care about marks during benchmarks, so the main timer must be active
                     return;
                 }
                 int mark_number = a.getDataByte(data_addr+1);
                 long mark_time = state.getCycles();
-                buf.append("Mark " + mark_number + " at " + (mark_time - mark_timer_start_time - 5) + " cycles since last mark. (already deducted 5 cycles for timer overhead)");
+                long duration = mark_time - mark_timer_start_time;
                 mark_timer_start_time = mark_time;
+
+                buf.append("Mark " + mark_number + " at " + (duration - 5) + " cycles since last mark. (already deducted 5 cycles for timer overhead)");
+                Terminal.printRed(buf.toString());
+                Terminal.nextln();
             break;
             default:
                 buf.append("UNKNOWN COMMAND! " + value + "\n\r");
+                Terminal.printRed(buf.toString());
             break;
         }
-        if (buf.length() > 0) {
-            Terminal.printRed(buf.toString());
-            Terminal.nextln();
+    }
+
+    public void report() {
+        for(int i=0; i<256; i++) {
+            if (timers_total_count[i] > 0) {
+                Terminal.printRed("[avrora.c-timer] Timer " + timerName(i) + " ran " + timers_total_count[i] + " times for a total of " + timers_total_time[i] + " cycles.");
+                Terminal.nextln();                
+            }
         }
     }
 }

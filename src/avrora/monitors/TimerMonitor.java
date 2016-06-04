@@ -72,7 +72,7 @@ public class TimerMonitor extends MonitorFactory {
         }
 
         public void report() {
-            // do nothing.
+            this.memprofile.report();
         }
     }
 

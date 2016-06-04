@@ -69,35 +69,66 @@
 #endif
 volatile int8_t ctimerWatch[2];
 
-#define AVRORA_TIMER_START_MAIN      1
-#define AVRORA_TIMER_STOP_MAIN       2
-#define AVRORA_TIMER_SET_MAIN_NUMBER 3
-#define AVRORA_TIMER_START_GC        4
-#define AVRORA_TIMER_STOP_GC         5
-#define AVRORA_TIMER_MARK            6
+#define AVRORA_TIMER_START_CURRENT        1
+#define AVRORA_TIMER_STOP_CURRENT         2
+#define AVRORA_TIMER_SET_CURRENT_NUMBER   3
+#define AVRORA_TIMER_START_SPECIFIC       4
+#define AVRORA_TIMER_STOP_SPECIFIC        5
+#define AVRORA_TIMER_MARK                 6
+
+#define AVRORA_DEFAULT_TIMER              1
+#define AVRORA_BENCH_NATIVE_TIMER       101
+#define AVRORA_BENCH_RTC_TIMER          102
+#define AVRORA_BENCH_JAVA_TIMER         103
+#define AVRORA_GC_TIMER                 104
+#define AVRORA_REPROG_TIMER             105
+#define AVRORA_RTC_COMPILE_TIMER        106
+
 
 // -1 starts the timer
 // any positive number stops the timer and reports that number (for scripting purposes)
 static AVRORA_TIMER_INLINE void avroraStartTimer()
 {
-	ctimerWatch[0] = AVRORA_TIMER_START_MAIN;
+	ctimerWatch[0] = AVRORA_TIMER_START_CURRENT;
 }
 static AVRORA_TIMER_INLINE void avroraStopTimer()
 {
-	ctimerWatch[0] = AVRORA_TIMER_STOP_MAIN;
+	ctimerWatch[0] = AVRORA_TIMER_STOP_CURRENT;
 }
 static AVRORA_TIMER_INLINE void avroraSetTimerNumber(int8_t number)
 {
     ctimerWatch[1] = number;
-    ctimerWatch[0] = AVRORA_TIMER_SET_MAIN_NUMBER;
+    ctimerWatch[0] = AVRORA_TIMER_SET_CURRENT_NUMBER;
 }
 static AVRORA_TIMER_INLINE void avroraStartGarbageCollectionTimer()
 {
-    ctimerWatch[0] = AVRORA_TIMER_START_GC;
+    ctimerWatch[1] = AVRORA_GC_TIMER;
+    ctimerWatch[0] = AVRORA_TIMER_START_SPECIFIC;
 }
 static AVRORA_TIMER_INLINE void avroraStopGarbageCollectionTimer()
 {
-    ctimerWatch[0] = AVRORA_TIMER_STOP_GC;
+    ctimerWatch[1] = AVRORA_GC_TIMER;
+    ctimerWatch[0] = AVRORA_TIMER_STOP_SPECIFIC;
+}
+static AVRORA_TIMER_INLINE void avroraStartReprogTimer()
+{
+    ctimerWatch[1] = AVRORA_REPROG_TIMER;
+    ctimerWatch[0] = AVRORA_TIMER_START_SPECIFIC;
+}
+static AVRORA_TIMER_INLINE void avroraStopReprogTimer()
+{
+    ctimerWatch[1] = AVRORA_REPROG_TIMER;
+    ctimerWatch[0] = AVRORA_TIMER_STOP_SPECIFIC;
+}
+static AVRORA_TIMER_INLINE void avroraStartRTCCompileTimer()
+{
+    ctimerWatch[1] = AVRORA_RTC_COMPILE_TIMER;
+    ctimerWatch[0] = AVRORA_TIMER_START_SPECIFIC;
+}
+static AVRORA_TIMER_INLINE void avroraStopRTCCompileTimer()
+{
+    ctimerWatch[1] = AVRORA_RTC_COMPILE_TIMER;
+    ctimerWatch[0] = AVRORA_TIMER_STOP_SPECIFIC;
 }
 static AVRORA_TIMER_INLINE void avroraTimerMark(int8_t number)
 {
