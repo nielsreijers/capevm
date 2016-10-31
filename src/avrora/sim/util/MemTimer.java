@@ -52,11 +52,11 @@ public class MemTimer extends Simulator.Watch.Empty {
 
     private static final byte AVRORA_DEFAULT_TIMER            =   1;
     private static final byte AVRORA_BENCH_NATIVE_TIMER       = 101;
-    private static final byte AVRORA_BENCH_RTC_TIMER          = 102;
+    private static final byte AVRORA_BENCH_AOT_TIMER          = 102;
     private static final byte AVRORA_BENCH_JAVA_TIMER         = 103;
     private static final byte AVRORA_GC_TIMER                 = 104;
     private static final byte AVRORA_REPROG_TIMER             = 105;
-    private static final byte AVRORA_RTC_COMPILE_TIMER        = 106;
+    private static final byte AVRORA_AOT_COMPILE_TIMER        = 106;
 
 
     int base;
@@ -79,8 +79,8 @@ public class MemTimer extends Simulator.Watch.Empty {
 
     private boolean timerIsActive(int timer) {
         if (timer == AVRORA_GC_TIMER) {
-            // Only count GC cycles spent when running RTC code
-            return timers_start_time[AVRORA_BENCH_RTC_TIMER] != 0;
+            // Only count GC cycles spent when running AOT code
+            return timers_start_time[AVRORA_BENCH_AOT_TIMER] != 0;
         }
         return true;
     }
@@ -89,11 +89,11 @@ public class MemTimer extends Simulator.Watch.Empty {
         switch(timer) {
             case AVRORA_DEFAULT_TIMER: return "DEFAULT";
             case AVRORA_BENCH_NATIVE_TIMER: return "NATIVE";
-            case AVRORA_BENCH_RTC_TIMER: return "RTC";
+            case AVRORA_BENCH_AOT_TIMER: return "AOT";
             case AVRORA_BENCH_JAVA_TIMER: return "JAVA";
             case AVRORA_GC_TIMER: return "GC";
             case AVRORA_REPROG_TIMER: return "REPROG";
-            case AVRORA_RTC_COMPILE_TIMER: return "RTC COMPILATION";
+            case AVRORA_AOT_COMPILE_TIMER: return "AOT COMPILATION";
             default: return "UNKNOWN TIMER " + timer;
         }
     }
@@ -169,7 +169,7 @@ public class MemTimer extends Simulator.Watch.Empty {
                 stopTimer(a.getDataByte(data_addr+1), state);
             break;
             case AVRORA_TIMER_MARK:
-                if (timers_start_time[AVRORA_BENCH_RTC_TIMER] != 0) { // We only care about marks during benchmarks, so the main timer must be active
+                if (timers_start_time[AVRORA_BENCH_AOT_TIMER] != 0) { // We only care about marks during benchmarks, so the main timer must be active
                     return;
                 }
                 int mark_number = a.getDataByte(data_addr+1);
