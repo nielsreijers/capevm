@@ -170,16 +170,15 @@ public class MemTimer extends Simulator.Watch.Empty {
             break;
             case AVRORA_TIMER_MARK:
                 if (timers_start_time[AVRORA_BENCH_AOT_TIMER] != 0) { // We only care about marks during benchmarks, so the main timer must be active
-                    return;
-                }
-                int mark_number = a.getDataByte(data_addr+1);
-                long mark_time = state.getCycles();
-                long duration = mark_time - mark_timer_start_time;
-                mark_timer_start_time = mark_time;
+                    int mark_number = a.getDataByte(data_addr+1);
+                    long mark_time = state.getCycles();
+                    long duration = mark_time - mark_timer_start_time;
+                    mark_timer_start_time = mark_time;
 
-                buf.append("Mark " + mark_number + " at " + (duration - 5) + " cycles since last mark. (already deducted 5 cycles for timer overhead)");
-                Terminal.printRed(buf.toString());
-                Terminal.nextln();
+                    buf.append("Mark " + mark_number + " at " + (duration - 5) + " cycles since last mark. (already deducted 5 cycles for timer overhead)");
+                    Terminal.printRed(buf.toString());
+                    Terminal.nextln();
+                }
             break;
             default:
                 buf.append("UNKNOWN COMMAND! " + value + "\n\r");
