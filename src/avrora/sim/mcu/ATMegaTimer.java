@@ -511,7 +511,7 @@ public abstract class ATMegaTimer extends AtmelInternalDevice {
      */
     abstract class Comparator {
 
-        public static final String _ = "";
+        public static final String empty = "";
         public static final String A = "A";
         public static final String B = "B";
         public static final String C = "C";

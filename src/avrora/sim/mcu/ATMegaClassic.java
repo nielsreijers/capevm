@@ -1,4 +1,4 @@
-/**
+    /**
  * Copyright (c) 2004-2005, Regents of the University of California
  * All rights reserved.
  *
@@ -64,7 +64,7 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
 
             AtmelMicrocontroller.Pin pin = (AtmelMicrocontroller.Pin) m.getPin("OC" + timerNumber);
             int interrupt = m.properties.getInterrupt(acfName);
-            addComparator(Comparator._, new OutputCompareUnit(n, m, Comparator._, interrupt, pin));
+            addComparator(Comparator.empty, new OutputCompareUnit(n, m, Comparator.empty, interrupt, pin));
 
             String ocfn = "OCF" + n;
             String ocrn = "OCR" + n;
@@ -133,7 +133,7 @@ public abstract class ATMegaClassic extends ATMegaFamilyNew {
             m.installIOReg("TCNT" + n + "L", TCNTnL_reg);
 
 
-            addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator._, m.properties.getInterrupt(cfn[0]), (Pin) m.getPin("IC" + timerNumber)));
+            addComparator(Comparator.I, new InputCompareUnit(n, m, Comparator.empty, m.properties.getInterrupt(cfn[0]), (Pin) m.getPin("IC" + timerNumber)));
             addComparator(Comparator.A, new OutputCompareUnit(n, m, Comparator.A, m.properties.getInterrupt(cfn[1]), (Pin) m.getPin("OC" + timerNumber + "A")));
             addComparator(Comparator.B, new OutputCompareUnit(n, m, Comparator.B, m.properties.getInterrupt(cfn[2]), (Pin) m.getPin("OC" + timerNumber + "B")));
             addComparator(Comparator.C, new OutputCompareUnit(n, m, Comparator.C, m.properties.getInterrupt(cfn[3]), (Pin) m.getPin("OC" + timerNumber + "C")));
