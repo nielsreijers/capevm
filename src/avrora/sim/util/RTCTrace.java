@@ -996,6 +996,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		while (address < method.EndAddress) {
 			AbstractInstr instr = state.getInstr(address);
 
+			if (instr==null) {
+				Terminal.print("Can't find instruction at address 0x" + Integer.toHexString(address) + ". (contains " + getProgramInt16(a, address) + ").\n");
+				System.exit(1);
+			}
+
 			AvrInstruction avrInstruction = new AvrInstruction();
 			avrInstruction.Address = address;
 			if (instr.getSize()==2) {
