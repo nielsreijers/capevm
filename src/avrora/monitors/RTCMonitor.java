@@ -2,6 +2,7 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.sim.util.RTCTrace;
+import avrora.sim.util.InfusionHeaderParser;
 import avrora.core.SourceMapping;
 import cck.util.Option;
 import cck.util.Util;
@@ -30,6 +31,9 @@ public class RTCMonitor extends MonitorFactory {
     protected final Option.Str FILENAME = newOption("rtc-data-filename", "",
             "This option specifies the name of the file to write the rtc data to. If not " +
             "specifed, the output will be printed to the terminal.");
+    protected final Option.Str GRADLEBUILD = newOption("rtc-gradle-build", "",
+            "This option specifies the Gradle build directory where the infusion headers " +
+            "can be found.");
 
     static final Printer verbosePrinter = Verbose.getVerbosePrinter("c-print");
 
@@ -38,6 +42,8 @@ public class RTCMonitor extends MonitorFactory {
 
         Monitor(Simulator s) {
             int base = -1;
+
+            InfusionHeaderParser.basedir = GRADLEBUILD.get();
 
             if (!BASEADDR.isBlank()) {
                 // The address is given directly, so we do not need to look-up the variable.
@@ -62,6 +68,8 @@ public class RTCMonitor extends MonitorFactory {
             } else {
                 verbosePrinter.println("rtc monitor not monitoring any memory region");
             }
+
+
         }
 
         public void report() {

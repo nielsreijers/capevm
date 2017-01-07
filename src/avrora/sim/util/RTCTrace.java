@@ -28,6 +28,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_STACKCACHEPINNEDREGISTERS = 10;
 	final static int AVRORA_RTC_STACKCACHESKIPINSTRUCTION = 11;
 	final static int AVRORA_RTC_INIT                      = 42;
+	final static int AVRORA_RTC_SETCURRENTINFUSION        = 43;
 
 	final static int JVM_NOP = 0;
 	final static int JVM_SCONST_M1 = 1;
@@ -500,6 +501,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
         final int h3 = a.getDataByte(offset + 3);
         return ((h3 & 0xff) << 24) + ((h2 & 0xff) << 16) + ((h & 0xff) << 8) + (l & 0xff);
     }
+    static private int getProgramInt8(AtmelInterpreter a, int offset) {
+        return a.getProgramByte(offset);
+    }
     static private int getProgramInt16(AtmelInterpreter a, int offset) {
         final int l = a.getProgramByte(offset);
         final int h = a.getProgramByte(offset + 1);
@@ -538,6 +542,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		}
 	}
 	private class MethodImpl {
+		public String Infusion;
 		public int MethodImplId;
 		public int StartAddress;
 		public int EndAddress;
@@ -586,6 +591,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	private int branchTargetCounter;
 	private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
 	private boolean patchingBranches = false;
+	private String currentInfusion = "not yet set";
 
     /**
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
@@ -615,6 +621,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			switch (value) {
 				case AVRORA_RTC_STARTMETHOD: {
 					currentMethod = new MethodImpl();
+					currentMethod.Infusion = this.currentInfusion;
 					currentMethod.MethodImplId = (getDataInt8(a, data_addr+1) & 0xff);
 					currentMethod.StartAddress = getDataInt32(a, data_addr+2);
 					methodImpls.add(currentMethod);
@@ -712,6 +719,21 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		                System.exit(-1);
 					}
 					this.initialised = true;
+				break;
+				case AVRORA_RTC_SETCURRENTINFUSION:
+					this.currentInfusion = "";
+					int infusionNameAddress = ((int)getDataInt8(a, data_addr+1) & 0xFF)
+					                        + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8)
+					                        + (((int)getDataInt8(a, data_addr+3) & 0xFF) << 16)
+					                        + (((int)getDataInt8(a, data_addr+4) & 0xFF) << 24);
+					int c;
+					do {
+						c=getProgramInt8(a, infusionNameAddress++);
+						if (c != 0) {
+							this.currentInfusion += Character.toString((char)c);
+						}
+					} while (c != 0);
+					Terminal.print("\n\r####################################### RTC INFUSION " + this.currentInfusion + "\n\r\n\r");
 				break;
 				default:
 					Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
@@ -892,12 +914,21 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		buf.append("<methods>");
 
 		for (MethodImpl method : methodImpls) {
+			String methodDefId = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefId(method.MethodImplId);
+			String methodDefInfusion = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefInfusion(method.MethodImplId);
+			String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
+			String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
+
 			buf.append("    <methodImpl\n\r");
+			buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"");
+			buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\"");
+			buf.append("            method=\"" + method.Infusion + "." + methodName + " " + methodSignature + "\"\n\r");
 			buf.append("            methodImplId=\"" + method.MethodImplId + "\"\n\r");
+			buf.append("            methodDefId=\"" + methodDefId + "\"\n\r");
+			buf.append("            methodDefInfusion=\"" + methodDefInfusion + "\"\n\r");
+			buf.append("            methodSignature=\"" + methodSignature + "\"\n\r");
 			buf.append("            startAddress=\"0x" + Integer.toHexString(method.StartAddress) + "\"\n\r");
 			buf.append("            endAddress=\"0x" + Integer.toHexString(method.EndAddress) + "\"\n\r");
-			buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"\n\r");
-			buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\"\n\r");
 			buf.append("            branchCount=\"" + (method.BranchCount) + "\"\n\r");
 			buf.append("            markloopCount=\"" + (method.MarkloopCount) + "\"\n\r");
 			buf.append("            markloopTotalSize=\"" + (method.MarkloopTotalSize) + "\" >\n\r");

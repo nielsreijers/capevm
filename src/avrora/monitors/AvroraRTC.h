@@ -24,6 +24,7 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_STACKCACHEPINNEDREGISTERS 10
 #define AVRORA_RTC_STACKCACHESKIPINSTRUCTION 11
 #define AVRORA_RTC_INIT                      42
+#define AVRORA_RTC_SETCURRENTINFUSION        43
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
 	*((uint16_t *)(rtcMonitorVariable+1)) = opcode;
@@ -71,7 +72,6 @@ static AVRORA_PRINT_INLINE void avroraRTCTracePatchingBranchesOff()
 {
 	rtcMonitorVariable[0] = AVRORA_RTC_PATCHINGBRANCHES_OFF;
 }
-
 static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheState(uint8_t *cachestate)
 {
 	rtcMonitorVariable[1] = ((uint16_t)cachestate) & 0xFF;
@@ -87,6 +87,14 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheValuetags(uint16_t *cach
 static AVRORA_PRINT_INLINE void avroraRTCTraceInit()
 {
 	rtcMonitorVariable[0] = AVRORA_RTC_INIT;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCSetCurrentInfusion(uint32_t infusionName)
+{
+	rtcMonitorVariable[1] = (infusionName) & 0xFF;
+	rtcMonitorVariable[2] = ((infusionName) >> 8)& 0xFF;
+	rtcMonitorVariable[3] = ((infusionName) >> 16)& 0xFF;
+	rtcMonitorVariable[4] = ((infusionName) >> 24)& 0xFF;
+	rtcMonitorVariable[0] = AVRORA_RTC_SETCURRENTINFUSION;
 }
 static AVRORA_PRINT_INLINE void avroraRTCTraceStackCachePinnedRegisters(uint16_t cachestate_pinnedregisters)
 {
