@@ -110,7 +110,7 @@ static AVRORA_PRINT_INLINE void avroraPrintInt8(char c)
 	debugbuf1[2] = (uint8_t)((uint16_t) i >> 8) & 0x00ff;
 	avroraPrintSetVarType(AVRORA_PRINT_2BYTE_SIGNED_INTEGERS);
 }
-static AVRORA_PRINT_INLINE void avroraPrintUInt8(char c)
+static AVRORA_PRINT_INLINE void avroraPrintUInt8(uint8_t c)
 {
 	debugbuf1[1] = c;
 	debugbuf1[2] = 0;

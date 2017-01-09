@@ -626,6 +626,13 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					currentMethod.StartAddress = getDataInt32(a, data_addr+2);
 					methodImpls.add(currentMethod);
 					branchTargetCounter = 0;
+
+
+					String methodDefId = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefId(currentMethod.MethodImplId);
+					String methodDefInfusion = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefInfusion(currentMethod.MethodImplId);
+					String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
+					String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
+					Terminal.print("[avrora.rtc] Start method " + this.currentInfusion + "." + methodName + " " + methodSignature + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
 				}
 				break;
 				case AVRORA_RTC_JAVAOPCODE: {
@@ -682,6 +689,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					} else {
 						addFunctionDisassembly(state, currentMethod, numberOfBranchTargets);
 					}
+
+					Terminal.print(" ends at 0x" + Integer.toHexString(currentMethod.EndAddress) + ", AOT size: " + (currentMethod.EndAddress - currentMethod.StartAddress) + ", JVM size: " + currentMethod.JvmMethodSize + "\n\r");
 				}
 				break;
 				case AVRORA_RTC_STACKCACHESTATE:
