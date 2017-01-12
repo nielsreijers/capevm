@@ -1,6 +1,7 @@
 package avrora.sim.util;
 
 import java.util.ArrayList; 
+import java.net.URLEncoder;
 import avrora.sim.*;
 import avrora.arch.AbstractInstr;
 import avrora.arch.legacy.LegacyInstr;
@@ -632,7 +633,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					String methodDefInfusion = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefInfusion(currentMethod.MethodImplId);
 					String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
 					String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
-					Terminal.print("[avrora.rtc] Start method " + this.currentInfusion + "." + methodName + " " + methodSignature + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
+					Terminal.print("[avrora.rtc] Start method " + currentMethod.MethodImplId + " " + this.currentInfusion + "." + methodName + " " + methodSignature + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
 				}
 				break;
 				case AVRORA_RTC_JAVAOPCODE: {
@@ -918,6 +919,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
     		avrInstruction.BranchTarget,
     		avrInstruction.Text);
     }
+    private String urlencode(String s) {
+    	try {
+    		return URLEncoder.encode(s, java.nio.charset.StandardCharsets.UTF_8.toString());
+    	} catch (Exception ex) {
+    		System.err.println("Couldn't urlencode string \"" + s + "\".");
+    		System.err.println(ex.toString());
+    		System.exit(1);
+    		return ""; // Really javac?
+    	}
+    }
     public String toXmlString() {
         StringBuffer buf = new StringBuffer();
 		buf.append("<methods>");
@@ -927,11 +938,10 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			String methodDefInfusion = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefInfusion(method.MethodImplId);
 			String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
 			String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
-
 			buf.append("    <methodImpl\n\r");
 			buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"");
 			buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\"");
-			buf.append("            method=\"" + method.Infusion + "." + methodName + " " + methodSignature + "\"\n\r");
+			buf.append("            method=\"" + urlencode(method.Infusion) + "." + urlencode(methodName) + " " + methodSignature + "\"\n\r");
 			buf.append("            methodImplId=\"" + method.MethodImplId + "\"\n\r");
 			buf.append("            methodDefId=\"" + methodDefId + "\"\n\r");
 			buf.append("            methodDefInfusion=\"" + methodDefInfusion + "\"\n\r");
