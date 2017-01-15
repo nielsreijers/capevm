@@ -25,6 +25,7 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_STACKCACHESKIPINSTRUCTION 11
 #define AVRORA_RTC_INIT                      42
 #define AVRORA_RTC_SETCURRENTINFUSION        43
+#define AVRORA_RTC_RUNTIMEMETHODCALL         44
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
 	*((uint16_t *)(rtcMonitorVariable+1)) = opcode;
@@ -106,5 +107,14 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheSkipInstruction(uint8_t 
 {
 	rtcMonitorVariable[1] = reason;
 	rtcMonitorVariable[0] = AVRORA_RTC_STACKCACHESKIPINSTRUCTION;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCall(uint32_t infusionName, uint8_t method_impl_id)
+{
+	rtcMonitorVariable[1] = (infusionName) & 0xFF;
+	rtcMonitorVariable[2] = ((infusionName) >> 8)& 0xFF;
+	rtcMonitorVariable[3] = ((infusionName) >> 16)& 0xFF;
+	rtcMonitorVariable[4] = ((infusionName) >> 24)& 0xFF;
+	rtcMonitorVariable[5] = method_impl_id;
+	rtcMonitorVariable[0] = AVRORA_RTC_RUNTIMEMETHODCALL;	
 }
 #endif

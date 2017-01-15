@@ -30,6 +30,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_STACKCACHESKIPINSTRUCTION = 11;
 	final static int AVRORA_RTC_INIT                      = 42;
 	final static int AVRORA_RTC_SETCURRENTINFUSION        = 43;
+	final static int AVRORA_RTC_RUNTIMEMETHODCALL         = 44;
+
 
 	final static int JVM_NOP = 0;
 	final static int JVM_SCONST_M1 = 1;
@@ -606,6 +608,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
 		AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
 		MethodImpl currentMethod;
 
+		int infusionNameAddress;
+		int c;
+
 		// Check if we're turning the patchingBranches switch on or off
 		switch (value) {
 			case AVRORA_RTC_PATCHINGBRANCHES_ON: {
@@ -732,11 +737,10 @@ public class RTCTrace extends Simulator.Watch.Empty {
 				break;
 				case AVRORA_RTC_SETCURRENTINFUSION:
 					this.currentInfusion = "";
-					int infusionNameAddress = ((int)getDataInt8(a, data_addr+1) & 0xFF)
+					infusionNameAddress = ((int)getDataInt8(a, data_addr+1) & 0xFF)
 					                        + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8)
 					                        + (((int)getDataInt8(a, data_addr+3) & 0xFF) << 16)
 					                        + (((int)getDataInt8(a, data_addr+4) & 0xFF) << 24);
-					int c;
 					do {
 						c=getProgramInt8(a, infusionNameAddress++);
 						if (c != 0) {
@@ -745,6 +749,26 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					} while (c != 0);
 					Terminal.print("\n\r####################################### RTC INFUSION " + this.currentInfusion + "\n\r\n\r");
 				break;
+				case AVRORA_RTC_RUNTIMEMETHODCALL:
+					String infusionName = "";
+					infusionNameAddress = ((int)getDataInt8(a, data_addr+1) & 0xFF)
+					                        + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8)
+					                        + (((int)getDataInt8(a, data_addr+3) & 0xFF) << 16)
+					                        + (((int)getDataInt8(a, data_addr+4) & 0xFF) << 24);
+					do {
+						c=getProgramInt8(a, infusionNameAddress++);
+						if (c != 0) {
+							infusionName += Character.toString((char)c);
+						}
+					} while (c != 0);
+					int methodImplId = ((int)getDataInt8(a, data_addr+5) & 0xFF);
+					String methodDefId = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefId(methodImplId);
+					String methodDefInfusion = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefInfusion(methodImplId);
+					String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
+					String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
+
+					Terminal.print("\n\r####################################### RUNTIME CALL TO " + infusionName + "." + methodName + " " + methodSignature + "\n\r\n\r");
+					break;
 				default:
 					Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
 				break;
