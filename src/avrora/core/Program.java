@@ -36,6 +36,7 @@ import avrora.arch.*;
 import avrora.arch.legacy.LegacyInstr;
 import cck.text.StringUtil;
 import cck.util.Util;
+import cck.elf.ELFSectionHeaderTable;
 import java.util.*;
 
 /**
@@ -54,6 +55,8 @@ public class Program {
     private final HashMap<Integer, List<Integer>> indirectEdges;
 
     private SourceMapping sourceMapping;
+
+    private ELFSectionHeaderTable sht;
 
     private ControlFlowGraph cfg;
 
@@ -301,6 +304,14 @@ public class Program {
      */
     public void setSourceMapping(SourceMapping s) {
         sourceMapping = s;
+    }
+
+    public ELFSectionHeaderTable getELFSectionHeaderTable() {
+        return this.sht;
+    }
+
+    public void setELFSectionHeaderTable(ELFSectionHeaderTable sht) {
+        this.sht = sht;
     }
 
     /**

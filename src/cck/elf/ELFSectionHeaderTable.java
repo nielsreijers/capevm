@@ -182,4 +182,7 @@ public class ELFSectionHeaderTable {
         return e.getName();
     }
 
+    public Entry32[] getEntries() {
+        return this.entries;
+    }
 }
