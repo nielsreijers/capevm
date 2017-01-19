@@ -31,6 +31,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	final static int AVRORA_RTC_INIT                      = 42;
 	final static int AVRORA_RTC_SETCURRENTINFUSION        = 43;
 	final static int AVRORA_RTC_RUNTIMEMETHODCALL         = 44;
+	final static int AVRORA_RTC_RUNTIMEMETHODCALLRETURN   = 45;
+	final static int AVRORA_RTC_BEEP                      = 46;
+	final static int AVRORA_RTC_TERMINATEONEXCEPTION      = 47;
 
 
 	final static int JVM_NOP = 0;
@@ -595,6 +598,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
 	private boolean patchingBranches = false;
 	private String currentInfusion = "not yet set";
+	private int runtimeCallDepth = 0;
 
     /**
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
@@ -767,8 +771,39 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
 					String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
 
-					Terminal.print("\n\r####################################### RUNTIME CALL TO " + infusionName + "." + methodName + " " + methodSignature + "\n\r\n\r");
-					break;
+					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + runtimeCallDepth++ + " RUNTIME CALL TO " + infusionName + "." + methodName + " " + methodSignature + "\n\r\n\r");
+				break;
+				case AVRORA_RTC_RUNTIMEMETHODCALLRETURN:
+					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + --runtimeCallDepth + " RUNTIME CALL RETURN\n\r\n\r");
+				break;
+				case AVRORA_RTC_BEEP:
+					int number = getDataInt8(a, data_addr+1);
+					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + runtimeCallDepth + " BEEP BEEP " + number + "\n\r\n\r");
+				break;
+				case AVRORA_RTC_TERMINATEONEXCEPTION:
+					int exceptionType = getDataInt16(a, data_addr+1);
+					String exceptionName = "?";
+					switch (exceptionType) {
+	 					case  1 : exceptionName = "ARITHMETIC_EXCEPTION"; break;
+	 					case  2 : exceptionName = "ARRAYINDEXOUTOFBOUNDS_EXCEPTION"; break;
+	 					case  3 : exceptionName = "ARRAYSTORE_EXCEPTION"; break;
+	 					case  4 : exceptionName = "CLASSCAST_EXCEPTION"; break;
+	 					case  5 : exceptionName = "CLASSUNLOADED_EXCEPTION"; break;
+	 					case  6 : exceptionName = "ILLEGALARGUMENT_EXCEPTION"; break;
+	 					case  7 : exceptionName = "ILLEGALTHREADSTATE_EXCEPTION"; break;
+	 					case  8 : exceptionName = "INDEXOUTOFBOUNDS_EXCEPTION"; break;
+	 					case  9 : exceptionName = "INFUSIONUNLOADDEPENDENCY_EXCEPTION"; break;
+	 					case 10 : exceptionName = "NATIVEMETHODNOTIMPLEMENTED_ERROR"; break;
+	 					case 11 : exceptionName = "NULLPOINTER_EXCEPTION"; break;
+	 					case 12 : exceptionName = "OUTOFMEMORY_ERROR"; break;
+	 					case 13 : exceptionName = "RUNTIME_EXCEPTION"; break;
+	 					case 14 : exceptionName = "STACKOVERFLOW_ERROR"; break;
+	 					case 15 : exceptionName = "STRINGINDEXOUTOFBOUNDS_EXCEPTION"; break;
+	 					case 16 : exceptionName = "VIRTUALMACHINE_ERROR"; break;
+					}
+					Terminal.print("\n\rKAPOT KAPOT KAPOT KAPOT " + exceptionType + " " + exceptionName + "\n\r\n\r");
+					System.exit(exceptionType);
+				break;
 				default:
 					Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
 				break;

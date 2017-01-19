@@ -26,6 +26,10 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_INIT                      42
 #define AVRORA_RTC_SETCURRENTINFUSION        43
 #define AVRORA_RTC_RUNTIMEMETHODCALL         44
+#define AVRORA_RTC_RUNTIMEMETHODCALLRETURN   45
+#define AVRORA_RTC_BEEP                      46
+#define AVRORA_RTC_TERMINATEONEXCEPTION      47
+
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
 	*((uint16_t *)(rtcMonitorVariable+1)) = opcode;
@@ -116,5 +120,21 @@ static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCall(uint32_t infusionName
 	rtcMonitorVariable[4] = ((infusionName) >> 24)& 0xFF;
 	rtcMonitorVariable[5] = method_impl_id;
 	rtcMonitorVariable[0] = AVRORA_RTC_RUNTIMEMETHODCALL;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCallReturn()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_RUNTIMEMETHODCALLRETURN;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCRuntimeBeep(uint8_t number)
+{
+	rtcMonitorVariable[1] = number;
+	rtcMonitorVariable[0] = AVRORA_RTC_BEEP;	
+}
+static AVRORA_PRINT_INLINE void avroraTerminateOnException(uint16_t type)
+{
+	rtcMonitorVariable[1] = (type) & 0xFF;
+	rtcMonitorVariable[2] = ((type) >> 8)& 0xFF;
+	rtcMonitorVariable[0] = AVRORA_RTC_TERMINATEONEXCEPTION;
+
 }
 #endif
