@@ -66,6 +66,8 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_PRINT_CHAR_BUFFER                = 0xB;
     final byte AVRORA_PRINT_R1                         = 0xC;
     final byte AVRORA_PRINT_SP                         = 0xD;
+    final byte AVRORA_PRINT_REGS                       = 0xE;
+    final byte AVRORA_PRINT_FLASH_STRING_POINTER       = 0xF;
 
     public MemPrint(int b, int m, String l) {
         base = b;
@@ -102,6 +104,8 @@ public class MemPrint extends Simulator.Watch.Empty {
 
             Simulator sim = state.getSimulator();
             AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
+            int strAddr;
+            byte b;
             StringBuffer buf = new StringBuffer();
             StringBuffer fil = new StringBuffer();
             SimUtil.getIDTimeString(buf, sim);
@@ -111,7 +115,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                 case AVRORA_PRINT_STRINGS:
                 default://for already formatted variables (i.e. TinyOS printf)
                     for (int i = 0; i <= max; i++) {
-                        byte b = a.getDataByte(base + i + 1);
+                        b = a.getDataByte(base + i + 1);
                         if (b == 0) break;//break if end of string
                         fil.append(String.valueOf((char) b));
                         if (b != 10) buf.append(String.valueOf((char) b));//not return char
@@ -155,9 +159,9 @@ public class MemPrint extends Simulator.Watch.Empty {
                     }
                     break;
                 case AVRORA_PRINT_STRING_POINTERS:
-                    final int strAddr = getInt16(a, base + 1);
+                    strAddr = getInt16(a, base + 1);
                     for (int i = 0; i <= max; i++) {
-                        byte b = a.getDataByte(strAddr + i);
+                        b = a.getDataByte(strAddr + i);
                         if (b == 0) break;//break if end of string
                         fil.append(String.valueOf((char) b));
                         if (b != 10) buf.append(String.valueOf((char) b));//not return char
@@ -168,7 +172,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                     final int bufAddr = getInt16(a, base + 1);
                     final int bufLen = getInt16(a, base + 3);
                     for (int i = 0; i < bufLen; i++) {
-                        final byte b = a.getDataByte(bufAddr + i);
+                        b = a.getDataByte(bufAddr + i);
                         if (i > 0) {
                             fil.append(" ");
                             buf.append(" ");
@@ -178,7 +182,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                     }
                     break;
                 case AVRORA_WRITE_CHAR_BUFFER:
-                    byte b = a.getDataByte(base + 1);
+                    b = a.getDataByte(base + 1);
                     charbuffer.append(String.valueOf((char) b));
                     break;
                 case AVRORA_PRINT_CHAR_BUFFER:
@@ -187,13 +191,54 @@ public class MemPrint extends Simulator.Watch.Empty {
                     charbuffer = new StringBuilder();
                     break;
                 case AVRORA_PRINT_R1:
-                    fil.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
-                    buf.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
+                    fil.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1)); buf.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1));
                     break;
                 case AVRORA_PRINT_SP:
-                    fil.append("SP:" + state.getSP());
-                    buf.append("SP:" + state.getSP());
+                    fil.append("SP:" + state.getSP()); buf.append("SP:" + state.getSP());
                     break;
+                case AVRORA_PRINT_REGS:
+                    fil.append("R0:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R0) + "\n");   buf.append("R0:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R0) + "\n");
+                    fil.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1) + "\n");   buf.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1) + "\n");
+                    fil.append("R2:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R2) + "\n");   buf.append("R2:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R2) + "\n");
+                    fil.append("R3:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R3) + "\n");   buf.append("R3:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R3) + "\n");
+                    fil.append("R4:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R4) + "\n");   buf.append("R4:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R4) + "\n");
+                    fil.append("R5:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R5) + "\n");   buf.append("R5:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R5) + "\n");
+                    fil.append("R6:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R6) + "\n");   buf.append("R6:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R6) + "\n");
+                    fil.append("R7:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R7) + "\n");   buf.append("R7:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R7) + "\n");
+                    fil.append("R8:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R8) + "\n");   buf.append("R8:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R8) + "\n");
+                    fil.append("R9:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R9) + "\n");   buf.append("R9:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R9) + "\n");
+                    fil.append("R10:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R10) + "\n"); buf.append("R10:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R10) + "\n");
+                    fil.append("R11:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R11) + "\n"); buf.append("R11:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R11) + "\n");
+                    fil.append("R12:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R12) + "\n"); buf.append("R12:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R12) + "\n");
+                    fil.append("R13:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R13) + "\n"); buf.append("R13:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R13) + "\n");
+                    fil.append("R14:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R14) + "\n"); buf.append("R14:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R14) + "\n");
+                    fil.append("R15:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R15) + "\n"); buf.append("R15:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R15) + "\n");
+                    fil.append("R16:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R16) + "\n"); buf.append("R16:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R16) + "\n");
+                    fil.append("R17:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R17) + "\n"); buf.append("R17:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R17) + "\n");
+                    fil.append("R18:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R18) + "\n"); buf.append("R18:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R18) + "\n");
+                    fil.append("R19:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R19) + "\n"); buf.append("R19:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R19) + "\n");
+                    fil.append("R20:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R20) + "\n"); buf.append("R20:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R20) + "\n");
+                    fil.append("R21:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R21) + "\n"); buf.append("R21:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R21) + "\n");
+                    fil.append("R22:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R22) + "\n"); buf.append("R22:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R22) + "\n");
+                    fil.append("R23:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R23) + "\n"); buf.append("R23:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R23) + "\n");
+                    fil.append("R24:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R24) + "\n"); buf.append("R24:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R24) + "\n");
+                    fil.append("R25:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R25) + "\n"); buf.append("R25:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R25) + "\n");
+                    fil.append("R26:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R26) + "\n"); buf.append("R26:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R26) + "\n");
+                    fil.append("R27:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R27) + "\n"); buf.append("R27:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R27) + "\n");
+                    fil.append("R28:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R28) + "\n"); buf.append("R28:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R28) + "\n");
+                    fil.append("R29:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R29) + "\n"); buf.append("R29:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R29) + "\n");
+                    fil.append("R30:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R30) + "\n"); buf.append("R30:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R30) + "\n");
+                    break;
+                case AVRORA_PRINT_FLASH_STRING_POINTER:
+                    strAddr = (int)getInt32(a, base + 1);
+                    for (int i = 0; i <= max; i++) {
+                        b = a.getProgramByte(strAddr + i);
+                        if (b == 0) break;//break if end of string
+                        fil.append(String.valueOf((char) b));
+                        if (b != 10) buf.append(String.valueOf((char) b));//not return char
+                        else if (i == 0) ret = true;//return line
+                    }
+                break;
             }
 
             synchronized ( Terminal.class) {

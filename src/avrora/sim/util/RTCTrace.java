@@ -771,7 +771,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
 					String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
 
-					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + runtimeCallDepth++ + " RUNTIME CALL TO " + infusionName + "." + methodName + " " + methodSignature + "\n\r\n\r");
+					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + runtimeCallDepth++ + " RUNTIME CALL TO " + infusionName + "." + methodName + " " + methodSignature + "   entity_id " + methodImplId + "\n\r\n\r");
 				break;
 				case AVRORA_RTC_RUNTIMEMETHODCALLRETURN:
 					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + --runtimeCallDepth + " RUNTIME CALL RETURN\n\r\n\r");
