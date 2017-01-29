@@ -1,6 +1,7 @@
 package avrora.sim.util;
 
-import java.util.ArrayList; 
+import java.util.ArrayList;
+import java.util.Stack;
 import java.net.URLEncoder;
 import avrora.sim.*;
 import avrora.arch.AbstractInstr;
@@ -599,7 +600,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
 	private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
 	private boolean patchingBranches = false;
 	private String currentInfusion = "not yet set";
-	private int runtimeCallDepth = 0;
+	private Stack<String> callStack = new Stack<String>();
+
+	public RTCTrace() {
+		callStack.push("null");
+	}
 
     /**
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
@@ -615,6 +620,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 
 		int infusionNameAddress;
 		int c;
+		String caller, callee;
 
 		// Check if we're turning the patchingBranches switch on or off
 		switch (value) {
@@ -771,15 +777,19 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					String methodDefInfusion = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefInfusion(methodImplId);
 					String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
 					String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
-
-					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + runtimeCallDepth++ + " RUNTIME CALL TO " + infusionName + "." + methodName + " " + methodSignature + "   entity_id " + methodImplId + "\n\r\n\r");
+					caller = callStack.peek();
+					callee = infusionName + "." + methodName + " " + methodSignature;
+					Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + methodImplId + "\n\r\n\r");
+					callStack.push(callee);
 				break;
 				case AVRORA_RTC_RUNTIMEMETHODCALLRETURN:
-					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + --runtimeCallDepth + " RUNTIME CALL RETURN\n\r\n\r");
+					callee = callStack.pop();
+					caller = callStack.peek();
+					Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME RETURN " + caller + " <- " + callee + "\n\r\n\r");
 				break;
 				case AVRORA_RTC_BEEP:
 					int number = getDataInt8(a, data_addr+1);
-					Terminal.print("\n\r####################################### " + Integer.toHexString(state.getSP()) + " " + runtimeCallDepth + " BEEP BEEP " + number + "\n\r\n\r");
+					Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " BEEP BEEP " + number + "\n\r\n\r");
 				break;
 				case AVRORA_RTC_TERMINATEONEXCEPTION:
 					int exceptionType = getDataInt16(a, data_addr+1);
