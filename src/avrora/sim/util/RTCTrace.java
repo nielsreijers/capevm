@@ -263,7 +263,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
 
 	private static int bytesToInt(int hi, int lo) { return (short)( ((hi&0xFF)<<8) | (lo&0xFF) ); }
 	private static int bytesToInt(int hi3, int hi2, int hi1, int lo) { return ( ((hi3&0xFF)<<24) | ((hi2&0xFF)<<16) | ((hi1&0xFF)<<8) | (lo&0xFF) ); }
-	private String opcode2string(int[] opcode) {
+	private String opcode2string(int[] opcode, String currentInfusion) {
+		String referencedInfusionName;
 		switch (opcode[0]) {
 			case JVM_NOP: return "JVM_NOP";
 			case JVM_SCONST_M1: return "JVM_SCONST_M1";
@@ -350,16 +351,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			case JVM_PUTFIELD_S: return "JVM_PUTFIELD_S		" + bytesToInt(opcode[1], opcode[2]);
 			case JVM_PUTFIELD_I: return "JVM_PUTFIELD_I		" + bytesToInt(opcode[1], opcode[2]);
 			case JVM_PUTFIELD_A: return "JVM_PUTFIELD_A		" + bytesToInt(opcode[1], opcode[2]);
-			case JVM_GETSTATIC_B: return "JVM_GETSTATIC_B	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_GETSTATIC_C: return "JVM_GETSTATIC_C	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_GETSTATIC_S: return "JVM_GETSTATIC_S	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_GETSTATIC_I: return "JVM_GETSTATIC_I	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_GETSTATIC_A: return "JVM_GETSTATIC_A	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_PUTSTATIC_B: return "JVM_PUTSTATIC_B	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_PUTSTATIC_C: return "JVM_PUTSTATIC_C	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_PUTSTATIC_S: return "JVM_PUTSTATIC_S	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_PUTSTATIC_I: return "JVM_PUTSTATIC_I	Infusion:" + opcode[1] + " Field:" + opcode[2];
-			case JVM_PUTSTATIC_A: return "JVM_PUTSTATIC_A	Infusion:" + opcode[1] + " Field:" + opcode[2];
+			case JVM_GETSTATIC_B: return "JVM_GETSTATIC_B	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_GETSTATIC_C: return "JVM_GETSTATIC_C	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_GETSTATIC_S: return "JVM_GETSTATIC_S	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_GETSTATIC_I: return "JVM_GETSTATIC_I	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_GETSTATIC_A: return "JVM_GETSTATIC_A	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_PUTSTATIC_B: return "JVM_PUTSTATIC_B	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_PUTSTATIC_C: return "JVM_PUTSTATIC_C	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_PUTSTATIC_S: return "JVM_PUTSTATIC_S	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_PUTSTATIC_I: return "JVM_PUTSTATIC_I	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
+			case JVM_PUTSTATIC_A: return "JVM_PUTSTATIC_A	Infusion:" + InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]) + " Field:" + opcode[2];
 			case JVM_SADD: return "JVM_SADD";
 			case JVM_SSUB: return "JVM_SSUB";
 			case JVM_SMUL: return "JVM_SMUL";
@@ -421,10 +422,10 @@ public class RTCTrace extends Simulator.Watch.Empty {
 			case JVM_IRETURN: return "JVM_IRETURN";
 			case JVM_ARETURN: return "JVM_ARETURN";
 			case JVM_RETURN: return "JVM_RETURN";
-			case JVM_INVOKEVIRTUAL: return "JVM_INVOKEVIRTUAL	OPERANDS NOT AVAILABLE IN CURRENT TRACER";
-			case JVM_INVOKESPECIAL: return "JVM_INVOKESPECIAL	OPERANDS NOT AVAILABLE IN CURRENT TRACER";
-			case JVM_INVOKESTATIC: return "JVM_INVOKESTATIC	OPERANDS NOT AVAILABLE IN CURRENT TRACER";
-			case JVM_INVOKEINTERFACE: return "JVM_INVOKEINTERFACE	OPERANDS NOT AVAILABLE IN CURRENT TRACER";
+			case JVM_INVOKEVIRTUAL:   referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return   "JVM_INVOKEVIRTUAL Impl Infusion:" + referencedInfusionName + "    MethodDef:" + InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_name_and_signature(opcode[2]);
+			case JVM_INVOKESPECIAL:   referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return   "JVM_INVOKESPECIAL Impl Infusion:" + referencedInfusionName + "    MethodDef:" + InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_name_and_signature(opcode[2]);
+			case JVM_INVOKESTATIC:    referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return    "JVM_INVOKESTATIC Impl Infusion:" + referencedInfusionName + "    MethodDef:" + InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_name_and_signature(opcode[2]);
+			case JVM_INVOKEINTERFACE: referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return "JVM_INVOKEINTERFACE Impl Infusion:" + referencedInfusionName + "    MethodDef:" + InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_name_and_signature(opcode[2]);
 			case JVM_NEW: return "JVM_NEW			Infusion:" + opcode[1] + " Class:" + opcode[2];
 			case JVM_NEWARRAY: return "JVM_NEWARRAY		Element type:" + opcode[1];
 			case JVM_ANEWARRAY: return "JVM_ANEWARRAY		Infusion:" + opcode[1] + " String:" + opcode[2];
@@ -654,7 +655,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 					opcode[4] = (getDataInt8(a, data_addr+5) & 0xff);
 
 					JavaInstruction javaInstruction = new JavaInstruction();
-					javaInstruction.Text = opcode2string(opcode);
+					javaInstruction.Text = opcode2string(opcode, this.currentInfusion);
 					currentMethod = methodImpls.get(methodImpls.size()-1);
 					updateCounters(currentMethod, opcode);
 					currentMethod.JavaInstructions.add(javaInstruction);

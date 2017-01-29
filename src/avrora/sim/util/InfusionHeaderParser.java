@@ -18,20 +18,26 @@ public class InfusionHeaderParser {
 			return parsers.get(infusion);
 		}
 
-		String headerPath = basedir + "/infusion-" + infusion + "/" + infusion + ".dih";
-		InfusionHeaderParser parser = new InfusionHeaderParser(headerPath);
+		InfusionHeaderParser parser = new InfusionHeaderParser(infusion);
 		parsers.put(infusion, parser);
 		return parser;
 	}
 
-
+	private String name;
 	private Element infusion;
 	private NodeList methodImpl_nList;
 	private NodeList methodDef_nList;
+	private NodeList referencedInfusion_nList;
 
-	public InfusionHeaderParser(String path) {
+	public InfusionHeaderParser(String name) {
 		try {
-			File fXmlFile = new File(path);
+			if (name==null) {
+				System.exit(1);
+			}
+			this.name = name;
+			String headerPath = basedir + "/infusion-" + name + "/" + name + ".dih";
+
+			File fXmlFile = new File(headerPath);
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
@@ -50,9 +56,29 @@ public class InfusionHeaderParser {
 			NodeList methodDefList_nList = infusion.getElementsByTagName("methoddeflist");
 			Element methodDefList = (Element)methodDefList_nList.item(0);
 			this.methodDef_nList = methodDefList.getElementsByTagName("methoddef");
+
+			NodeList referencedInfusionList_nList = infusion.getElementsByTagName("infusionlist");
+			Element referencedInfusionList = (Element)referencedInfusionList_nList.item(0);
+			this.referencedInfusion_nList = referencedInfusionList.getElementsByTagName("infusion");
+
 		} catch (Exception ex) {
 			System.err.println(ex.toString());
 			System.exit(1);
+		}
+	}
+
+	public String getReferencedInfusionName (int referencedInfusionId) {
+		if (referencedInfusionId==0) {
+			return this.name;
+		} else {
+			referencedInfusionId -= 1;
+			if (referencedInfusion_nList.getLength() <= referencedInfusionId) {
+				System.err.println("referenced infusion not found: " + referencedInfusionId + " in " + this.name);
+			}
+			Element e = (Element)referencedInfusion_nList.item(referencedInfusionId);
+			NodeList header_nList = e.getElementsByTagName("header");
+			Element header = (Element)header_nList.item(0);
+			return header.getAttribute("name");
 		}
 	}
 
@@ -96,4 +122,12 @@ public class InfusionHeaderParser {
 		}
 		return null;
 	}
+
+	public String getMethodImpl_name_and_signature (int methodImplId) {
+		String methodDefId = getMethodImpl_MethodDefId(methodImplId);
+		String methodDefInfusion = getMethodImpl_MethodDefInfusion(methodImplId);
+		InfusionHeaderParser header = InfusionHeaderParser.getParser(methodDefInfusion);
+		return methodDefInfusion + "." + header.getMethodDef_name(methodDefId) + " " + header.getMethodDef_signature(methodDefId);
+	}
+
 }
