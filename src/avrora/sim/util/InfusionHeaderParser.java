@@ -127,7 +127,12 @@ public class InfusionHeaderParser {
 		String methodDefId = getMethodImpl_MethodDefId(methodImplId);
 		String methodDefInfusion = getMethodImpl_MethodDefInfusion(methodImplId);
 		InfusionHeaderParser header = InfusionHeaderParser.getParser(methodDefInfusion);
-		return methodDefInfusion + "." + header.getMethodDef_name(methodDefId) + " " + header.getMethodDef_signature(methodDefId);
+		return header.getMethodDef_name(methodDefId) + " " + header.getMethodDef_signature(methodDefId);
+	}
+
+	public String getMethodDef_name_and_signature (int methodDefId) {
+		String methodDefIdString = Integer.toString(methodDefId);
+		return getMethodDef_name(methodDefIdString) + " " + getMethodDef_signature(methodDefIdString);
 	}
 
 }
