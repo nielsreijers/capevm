@@ -133,9 +133,10 @@ public class StackMonitor extends MonitorFactory {
         public void report() {
             if ( SPinit ) {
                 TermUtil.printSeparator("Stack results for node "+simulator.getID());
+                TermUtil.reportQuantity("Guard + abort range  ", StringUtil.addrToString(guardAddress + abortRange), "");
                 TermUtil.reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxSP), "");
                 TermUtil.reportQuantity("Minimum stack pointer", StringUtil.addrToString(minSP), "");
-                TermUtil.reportQuantity("Maximum stack size", (maxSP - minSP), "bytes");
+                TermUtil.reportQuantity("Maximum stack size   ", (maxSP - minSP), "bytes");
                 Terminal.nextln();
             } else {
                 Terminal.println("No stack pointer information for node "+simulator.getID()+".");
