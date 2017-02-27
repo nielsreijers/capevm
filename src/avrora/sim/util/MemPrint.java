@@ -68,6 +68,7 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_PRINT_SP                         = 0xD;
     final byte AVRORA_PRINT_REGS                       = 0xE;
     final byte AVRORA_PRINT_FLASH_STRING_POINTER       = 0xF;
+    final byte AVRORA_PRINT_PANIC                      = 0x10;
 
     public MemPrint(int b, int m, String l) {
         base = b;
@@ -97,6 +98,40 @@ public class MemPrint extends Simulator.Watch.Empty {
         return ((h3 & 0xff) << 24) + ((h2 & 0xff) << 16) + ((h1 & 0xff) << 8) + (l & 0xff);
     }
 
+    static private void printRegs(StringBuffer fil, StringBuffer buf, LegacyState state) {
+        fil.append("R0:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R0),2) + " ");   buf.append("R0:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R0),2) + " ");
+        fil.append("R1:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R1),2) + " ");   buf.append("R1:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R1),2) + " ");
+        fil.append("R2:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R2),2) + " ");   buf.append("R2:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R2),2) + " ");
+        fil.append("R3:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R3),2) + " ");   buf.append("R3:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R3),2) + " ");
+        fil.append("R4:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R4),2) + " ");   buf.append("R4:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R4),2) + " ");
+        fil.append("R5:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R5),2) + " ");   buf.append("R5:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R5),2) + " ");
+        fil.append("R6:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R6),2) + " ");   buf.append("R6:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R6),2) + " ");
+        fil.append("R7:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R7),2) + " ");   buf.append("R7:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R7),2) + " ");
+        fil.append("R8:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R8),2) + " ");   buf.append("R8:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R8),2) + " ");
+        fil.append("R9:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R9),2) + " ");   buf.append("R9:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R9),2) + " ");
+        fil.append("R10:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R10),2) + " "); buf.append("R10:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R10),2) + " ");
+        fil.append("R11:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R11),2) + " "); buf.append("R11:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R11),2) + " ");
+        fil.append("R12:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R12),2) + " "); buf.append("R12:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R12),2) + " ");
+        fil.append("R13:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R13),2) + " "); buf.append("R13:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R13),2) + " ");
+        fil.append("R14:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R14),2) + " "); buf.append("R14:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R14),2) + " ");
+        fil.append("R15:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R15),2) + " "); buf.append("R15:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R15),2) + " ");
+        fil.append("R16:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R16),2) + " "); buf.append("R16:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R16),2) + " ");
+        fil.append("R17:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R17),2) + " "); buf.append("R17:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R17),2) + " ");
+        fil.append("R18:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R18),2) + " "); buf.append("R18:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R18),2) + " ");
+        fil.append("R19:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R19),2) + " "); buf.append("R19:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R19),2) + " ");
+        fil.append("R20:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R20),2) + " "); buf.append("R20:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R20),2) + " ");
+        fil.append("R21:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R21),2) + " "); buf.append("R21:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R21),2) + " ");
+        fil.append("R22:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R22),2) + " "); buf.append("R22:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R22),2) + " ");
+        fil.append("R23:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R23),2) + " "); buf.append("R23:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R23),2) + " ");
+        fil.append("R24:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R24),2) + " "); buf.append("R24:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R24),2) + " ");
+        fil.append("R25:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R25),2) + " "); buf.append("R25:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R25),2) + " ");
+        fil.append("R26:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R26),2) + " "); buf.append("R26:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R26),2) + " ");
+        fil.append("R27:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R27),2) + " "); buf.append("R27:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R27),2) + " ");
+        fil.append("R28:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R28),2) + " "); buf.append("R28:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R28),2) + " ");
+        fil.append("R29:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R29),2) + " "); buf.append("R29:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R29),2) + " ");
+        fil.append("R30:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R30),2) + " "); buf.append("R30:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R30),2) + " ");
+    }
+
     public void fireBeforeWrite(State state, int data_addr, byte value) {
             if (data_addr != base) {
                 Terminal.printRed("Unexpected interception by printer!");
@@ -109,11 +144,11 @@ public class MemPrint extends Simulator.Watch.Empty {
             StringBuffer buf = new StringBuffer();
             StringBuffer fil = new StringBuffer();
             SimUtil.getIDTimeString(buf, sim);
-            buf.append("[avrora.c-print] ");
+            buf.append("[avrora.c-print] " + value + " ");
             boolean ret=false;//indicates that it is a return line
             switch (value) {
                 case AVRORA_PRINT_STRINGS:
-                default://for already formatted variables (i.e. TinyOS printf)
+                // default://for already formatted variables (i.e. TinyOS printf)
                     for (int i = 0; i <= max; i++) {
                         b = a.getDataByte(base + i + 1);
                         if (b == 0) break;//break if end of string
@@ -196,38 +231,9 @@ public class MemPrint extends Simulator.Watch.Empty {
                 case AVRORA_PRINT_SP:
                     fil.append("SP:" + state.getSP()); buf.append("SP:" + state.getSP());
                     break;
+                case 0:
                 case AVRORA_PRINT_REGS:
-                    fil.append("R0:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R0) + "\n");   buf.append("R0:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R0) + "\n");
-                    fil.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1) + "\n");   buf.append("R1:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R1) + "\n");
-                    fil.append("R2:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R2) + "\n");   buf.append("R2:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R2) + "\n");
-                    fil.append("R3:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R3) + "\n");   buf.append("R3:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R3) + "\n");
-                    fil.append("R4:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R4) + "\n");   buf.append("R4:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R4) + "\n");
-                    fil.append("R5:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R5) + "\n");   buf.append("R5:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R5) + "\n");
-                    fil.append("R6:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R6) + "\n");   buf.append("R6:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R6) + "\n");
-                    fil.append("R7:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R7) + "\n");   buf.append("R7:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R7) + "\n");
-                    fil.append("R8:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R8) + "\n");   buf.append("R8:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R8) + "\n");
-                    fil.append("R9:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R9) + "\n");   buf.append("R9:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R9) + "\n");
-                    fil.append("R10:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R10) + "\n"); buf.append("R10:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R10) + "\n");
-                    fil.append("R11:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R11) + "\n"); buf.append("R11:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R11) + "\n");
-                    fil.append("R12:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R12) + "\n"); buf.append("R12:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R12) + "\n");
-                    fil.append("R13:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R13) + "\n"); buf.append("R13:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R13) + "\n");
-                    fil.append("R14:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R14) + "\n"); buf.append("R14:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R14) + "\n");
-                    fil.append("R15:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R15) + "\n"); buf.append("R15:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R15) + "\n");
-                    fil.append("R16:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R16) + "\n"); buf.append("R16:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R16) + "\n");
-                    fil.append("R17:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R17) + "\n"); buf.append("R17:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R17) + "\n");
-                    fil.append("R18:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R18) + "\n"); buf.append("R18:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R18) + "\n");
-                    fil.append("R19:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R19) + "\n"); buf.append("R19:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R19) + "\n");
-                    fil.append("R20:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R20) + "\n"); buf.append("R20:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R20) + "\n");
-                    fil.append("R21:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R21) + "\n"); buf.append("R21:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R21) + "\n");
-                    fil.append("R22:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R22) + "\n"); buf.append("R22:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R22) + "\n");
-                    fil.append("R23:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R23) + "\n"); buf.append("R23:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R23) + "\n");
-                    fil.append("R24:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R24) + "\n"); buf.append("R24:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R24) + "\n");
-                    fil.append("R25:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R25) + "\n"); buf.append("R25:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R25) + "\n");
-                    fil.append("R26:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R26) + "\n"); buf.append("R26:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R26) + "\n");
-                    fil.append("R27:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R27) + "\n"); buf.append("R27:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R27) + "\n");
-                    fil.append("R28:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R28) + "\n"); buf.append("R28:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R28) + "\n");
-                    fil.append("R29:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R29) + "\n"); buf.append("R29:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R29) + "\n");
-                    fil.append("R30:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R30) + "\n"); buf.append("R30:" + ((LegacyState)state).getRegisterByte(LegacyRegister.R30) + "\n");
+                    printRegs(fil, buf, (LegacyState)state);
                     break;
                 case AVRORA_PRINT_FLASH_STRING_POINTER:
                     strAddr = (int)getInt32(a, base + 1);
@@ -238,6 +244,50 @@ public class MemPrint extends Simulator.Watch.Empty {
                         if (b != 10) buf.append(String.valueOf((char) b));//not return char
                         else if (i == 0) ret = true;//return line
                     }
+                    break;
+                case AVRORA_PRINT_PANIC:
+                    fil.append("PANIC!!!! \n"); buf.append("PANIC!!!! \n");
+                    int paniccode = a.getDataByte(base + 1);
+                    String panictext = "";
+                    // RUNLEVEL_PANIC = 3;
+                    switch(paniccode) {
+                        case 3+ 0: panictext = "DJ_PANIC_OUT_OF_MEMORY                            "; break;
+                        case 3+ 2: panictext = "DJ_PANIC_UNIMPLEMENTED_FEATURE                    "; break;
+                        case 3+ 3: panictext = "DJ_PANIC_UNCAUGHT_EXCEPTION                       "; break;
+                        case 3+ 4: panictext = "DJ_PANIC_UNSATISFIED_LINK                         "; break;
+                        case 3+ 5: panictext = "DJ_PANIC_MALFORMED_INFUSION                       "; break;
+                        case 3+ 6: panictext = "DJ_PANIC_ASSERTION_FAILURE                        "; break;
+                        case 3+ 7: panictext = "DJ_PANIC_SAFE_POINTER_OVERFLOW                    "; break;
+                        case 3+ 8: panictext = "DJ_PANIC_INFUSION_VERSION_MISMATCH                "; break;
+                        case 3+ 9: panictext = "DJ_PANIC_UNSUPPORTED_OPCODE                       "; break;
+                        case 3+10: panictext = "DJ_PANIC_REPROGRAM_OUTSIDE_REGION                 "; break;
+                        case 3+11: panictext = "DJ_PANIC_OFFSET_TOO_LARGE                         "; break;
+                        case 3+12: panictext = "DJ_PANIC_AOT_STACKCACHE_IN_USE                    "; break;
+                        case 3+13: panictext = "DJ_PANIC_AOT_STACKCACHE_NOTHING_TO_SPILL          "; break;
+                        case 3+14: panictext = "DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE     "; break;
+                        case 3+15: panictext = "DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET        "; break;
+                        case 3+16: panictext = "DJ_PANIC_AOT_STACKCACHE_NO_SPACE_FOR_POP          "; break;
+                        case 3+17: panictext = "DJ_PANIC_AOT_MARKLOOP_LOW_WORD_NOT_FOUND          "; break;
+                        case 3+18: panictext = "DJ_PANIC_CHECKCAST_FAILED                         "; break;
+                        case 3+19: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_ARRAY_COMPONENT   "; break;
+                        case 3+20: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_THREAD_FRAME_NULL "; break;
+                        case 3+21: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_NO_RUNTIME_CLASS  "; break;
+                        case 3+50: panictext = "DJ_PANIC_AOT_ASM_ERROR                            "; break;
+                        default: panictext = "UNKNOWN PANIC CODE: " + paniccode;                                ; break;
+                    }
+                    fil.append(panictext+"\n"); buf.append(panictext+"\n");
+
+                    fil.append("\n"); buf.append("\n");
+                    printRegs(fil, buf, (LegacyState)state);
+                    fil.append("\n"); buf.append("\n");
+                    fil.append("SP:" + StringUtil.toHex(state.getSP(), 6)); buf.append("SP:" + StringUtil.toHex(state.getSP(), 6));
+                    fil.append("\n"); buf.append("\n");
+                    fil.append("PC:" + StringUtil.toHex(state.getPC(), 6)); buf.append("PC:" + StringUtil.toHex(state.getPC(), 6));
+                    fil.append("\n"); buf.append("\n");
+                break;
+                default:
+                    fil.append("beep:" + value); buf.append("beep:" + value);
+
                 break;
             }
 
