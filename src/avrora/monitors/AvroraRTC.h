@@ -29,6 +29,7 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_RUNTIMEMETHODCALLRETURN   45
 #define AVRORA_RTC_BEEP                      46
 #define AVRORA_RTC_TERMINATEONEXCEPTION      47
+#define AVRORA_RTC_EMITPROLOGUE              48
 
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
@@ -135,6 +136,9 @@ static AVRORA_PRINT_INLINE void avroraTerminateOnException(uint16_t type)
 	rtcMonitorVariable[1] = (type) & 0xFF;
 	rtcMonitorVariable[2] = ((type) >> 8)& 0xFF;
 	rtcMonitorVariable[0] = AVRORA_RTC_TERMINATEONEXCEPTION;
-
+}
+static AVRORA_PRINT_INLINE void avroraRTCTraceEmitPrologue()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_EMITPROLOGUE;
 }
 #endif

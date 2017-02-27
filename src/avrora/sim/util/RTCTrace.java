@@ -35,6 +35,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int AVRORA_RTC_RUNTIMEMETHODCALLRETURN   = 45;
     final static int AVRORA_RTC_BEEP                      = 46;
     final static int AVRORA_RTC_TERMINATEONEXCEPTION      = 47;
+    final static int AVRORA_RTC_EMITPROLOGUE              = 48;
 
 
     final static int JVM_NOP = 0;
@@ -573,6 +574,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
             this.MarkloopTotalSize = 0;
         }
 
+        public JavaInstruction firstJavaInstruction() {
+            return this.JavaInstructions.get(0);
+        }
         public JavaInstruction lastJavaInstruction() {
             return this.JavaInstructions.get(this.JavaInstructions.size()-1);
         }
@@ -597,6 +601,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
 
     private boolean initialised = false;
     private int branchTargetCounter;
+    private boolean emittingPrologue = false; // The prologue is the last instruction generated, but the first instruction of the method. The compiler will signal RTCTrace when it starts to emit the prologue.
     private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
     private boolean patchingBranches = false;
     private String currentInfusion = "not yet set";
@@ -643,7 +648,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     currentMethod.StartAddress = getDataInt32(a, data_addr+2);
                     methodImpls.add(currentMethod);
                     branchTargetCounter = 0;
-
+                    emittingPrologue = false;
 
                     String methodDefId = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefId(currentMethod.MethodImplId);
                     String methodDefInfusion = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefInfusion(currentMethod.MethodImplId);
@@ -677,7 +682,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     avrInstruction.Opcode = getDataInt16(a, data_addr+1);
                     avrInstruction.Text = instr.toString();
                     currentMethod = methodImpls.get(methodImpls.size()-1);
-                    currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
+                    if (!emittingPrologue) {
+                        currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
+                    } else {
+                        currentMethod.firstJavaInstruction().UnoptimisedAvr.add(avrInstruction);                        
+                    }
                 }
                 break;
                 case AVRORA_RTC_DOUBLEWORDINSTRUCTION: { // 2 word instruction at data_addr+1:data_addr+2
@@ -692,7 +701,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     avrInstruction.Opcode = getDataInt32(a, data_addr+1);
                     avrInstruction.Text = instr.toString();
                     currentMethod = methodImpls.get(methodImpls.size()-1);
-                    currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
+                    if (!emittingPrologue) {
+                        currentMethod.lastJavaInstruction().UnoptimisedAvr.add(avrInstruction);
+                    } else {
+                        currentMethod.firstJavaInstruction().UnoptimisedAvr.add(avrInstruction);                        
+                    }
                 }
                 break;
                 case AVRORA_RTC_ENDMETHOD: {
@@ -814,6 +827,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     }
                     Terminal.print("\n\rKAPOT KAPOT KAPOT KAPOT " + exceptionType + " " + exceptionName + "\n\r\n\r");
                     System.exit(exceptionType);
+                break;
+                case AVRORA_RTC_EMITPROLOGUE:
+                    emittingPrologue = true;
                 break;
                 default:
                     Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
