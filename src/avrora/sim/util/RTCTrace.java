@@ -33,9 +33,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int AVRORA_RTC_SETCURRENTINFUSION        = 43;
     final static int AVRORA_RTC_RUNTIMEMETHODCALL         = 44;
     final static int AVRORA_RTC_RUNTIMEMETHODCALLRETURN   = 45;
-    final static int AVRORA_RTC_BEEP                      = 46;
-    final static int AVRORA_RTC_TERMINATEONEXCEPTION      = 47;
-    final static int AVRORA_RTC_EMITPROLOGUE              = 48;
+    final static int AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS   = 46;
+    final static int AVRORA_RTC_PRINTCURRENTAOTCALLSTACK  = 47;
+    final static int AVRORA_RTC_BEEP                      = 50;
+    final static int AVRORA_RTC_TERMINATEONEXCEPTION      = 51;
+    final static int AVRORA_RTC_EMITPROLOGUE              = 52;
 
 
     final static int JVM_NOP = 0;
@@ -600,6 +602,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
     }
 
     private boolean initialised = false;
+    private boolean printAllRuntimeAotCalls = false;
     private int branchTargetCounter;
     private boolean emittingPrologue = false; // The prologue is the last instruction generated, but the first instruction of the method. The compiler will signal RTCTrace when it starts to emit the prologue.
     private ArrayList<MethodImpl> methodImpls = new ArrayList<MethodImpl>();
@@ -792,13 +795,23 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
                     caller = callStack.peek();
                     callee = infusionName + "." + methodName + " " + methodSignature;
-                    Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + methodImplId + "\n\r\n\r");
+                    if (this.printAllRuntimeAotCalls) {
+                        Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + methodImplId + "\n\r\n\r");
+                    }
                     callStack.push(callee);
                 break;
                 case AVRORA_RTC_RUNTIMEMETHODCALLRETURN:
                     callee = callStack.pop();
                     caller = callStack.peek();
-                    Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME RETURN " + caller + " <- " + callee + "\n\r\n\r");
+                    if (this.printAllRuntimeAotCalls) {
+                        Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME RETURN " + caller + " <- " + callee + "\n\r\n\r");
+                    }
+                break;
+                case AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS:
+                    this.printAllRuntimeAotCalls = true;
+                break;
+                case AVRORA_RTC_PRINTCURRENTAOTCALLSTACK:
+                    printAOTCallStack(state);
                 break;
                 case AVRORA_RTC_BEEP:
                     int number = getDataInt8(a, data_addr+1);
@@ -826,6 +839,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
                         case 16 : exceptionName = "VIRTUALMACHINE_ERROR"; break;
                     }
                     Terminal.print("\n\rKAPOT KAPOT KAPOT KAPOT " + exceptionType + " " + exceptionName + "\n\r\n\r");
+                    printAOTCallStack(state);
                     System.exit(exceptionType);
                 break;
                 case AVRORA_RTC_EMITPROLOGUE:
@@ -836,6 +850,15 @@ public class RTCTrace extends Simulator.Watch.Empty {
                 break;
             }
         }
+    }
+
+    private void printAOTCallStack(State state) {
+        Terminal.print("____" + Integer.toHexString(state.getSP()) + " CURRENT AOT CALL STACK:\n");
+        Terminal.print(" 1 " + callStack.get(0) + "\n");
+        for (int i=1; i<callStack.size(); i++) {
+            Terminal.print(" " + (i+2) + " -> " + callStack.get(i) + "\n");
+        }
+        Terminal.print("____ END OF AOT CALL STACK.\n");
     }
 
     public String toString() {

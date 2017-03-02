@@ -27,9 +27,11 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_SETCURRENTINFUSION        43
 #define AVRORA_RTC_RUNTIMEMETHODCALL         44
 #define AVRORA_RTC_RUNTIMEMETHODCALLRETURN   45
-#define AVRORA_RTC_BEEP                      46
-#define AVRORA_RTC_TERMINATEONEXCEPTION      47
-#define AVRORA_RTC_EMITPROLOGUE              48
+#define AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS   46
+#define AVRORA_RTC_PRINTCURRENTAOTCALLSTACK  47
+#define AVRORA_RTC_BEEP                      50
+#define AVRORA_RTC_TERMINATEONEXCEPTION      51
+#define AVRORA_RTC_EMITPROLOGUE              52
 
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
@@ -125,6 +127,14 @@ static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCall(uint32_t infusionName
 static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCallReturn()
 {
 	rtcMonitorVariable[0] = AVRORA_RTC_RUNTIMEMETHODCALLRETURN;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCPrintAllRuntimeAOTCalls()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCCurrentAOTCallStack()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_PRINTCURRENTAOTCALLSTACK;	
 }
 static AVRORA_PRINT_INLINE void avroraRTCRuntimeBeep(uint8_t number)
 {
