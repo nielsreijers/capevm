@@ -275,6 +275,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                         case 3+20: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_THREAD_FRAME_NULL "; break;
                         case 3+21: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_NO_RUNTIME_CLASS  "; break;
                         case 3+50: panictext = "DJ_PANIC_AOT_ASM_ERROR                            "; break;
+                        case 3+51: panictext = "DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE        "; break;
                         default: panictext = "UNKNOWN PANIC CODE: " + paniccode;                                ; break;
                     }
                     fil.append(panictext+"\n"); buf.append(panictext+"\n");
@@ -302,7 +303,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                         right_pointer = getInt16(a, right_pointer_location.vma_addr & 0xffff);
                     }
                     int free = right_pointer - left_pointer;
-                    String line = "HEAP: left_pointer 0x" + StringUtil.toHex(left_pointer, 4) + " right pointer 0x" + StringUtil.toHex(left_pointer, 4) + " free: " + free + "\n";
+                    String line = "HEAP: left_pointer 0x" + StringUtil.toHex(left_pointer, 4) + " right_pointer 0x" + StringUtil.toHex(right_pointer, 4) + " free: " + free + "\n";
                     fil.append(line);
                     buf.append(line);
                 break;
