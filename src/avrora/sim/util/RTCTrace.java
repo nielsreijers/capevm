@@ -856,16 +856,21 @@ public class RTCTrace extends Simulator.Watch.Empty {
     }
 
     private void printAOTCallStack(State state) {
-        Terminal.print("____" + Integer.toHexString(state.getSP()) + " CURRENT AOT CALL STACK:\n");
-        Terminal.print(" 1 " + callStack.get(0) + "\n");
+        if (state == null) {
+            Terminal.print("REMAINING AOT CALL STACK:\n");
+        } else {
+            Terminal.print("____" + Integer.toHexString(state.getSP()) + " CURRENT AOT CALL STACK:\n");
+        }
+        Terminal.print(" 0 " + callStack.get(0) + "\n");
         for (int i=1; i<callStack.size(); i++) {
-            Terminal.print(" " + (i+2) + " -> " + callStack.get(i) + "\n");
+            Terminal.print(" " + (i) + " -> " + callStack.get(i) + "\n");
         }
         Terminal.print("____ END OF AOT CALL STACK.\n");
     }
 
     public void report() {
         TermUtil.reportQuantity("Number of function calls  ", this.numberOfAotCalls, "");
+        printAOTCallStack(null);
         Terminal.nextln();
     }
 
