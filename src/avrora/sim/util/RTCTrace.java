@@ -8,6 +8,7 @@ import avrora.arch.AbstractInstr;
 import avrora.arch.legacy.LegacyInstr;
 import avrora.arch.legacy.LegacyDisassembler;
 import cck.text.Terminal;
+import cck.text.TermUtil;
 
 /**
  * The <code>RTCDisassembler</code> 
@@ -609,6 +610,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
     private boolean patchingBranches = false;
     private String currentInfusion = "not yet set";
     private Stack<String> callStack = new Stack<String>();
+    private int numberOfAotCalls = 0;
 
     public RTCTrace() {
         callStack.push("null");
@@ -799,6 +801,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
                         Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + methodImplId + "\n\r\n\r");
                     }
                     callStack.push(callee);
+                    numberOfAotCalls++;
                 break;
                 case AVRORA_RTC_RUNTIMEMETHODCALLRETURN:
                     callee = callStack.pop();
@@ -859,6 +862,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
             Terminal.print(" " + (i+2) + " -> " + callStack.get(i) + "\n");
         }
         Terminal.print("____ END OF AOT CALL STACK.\n");
+    }
+
+    public void report() {
+        TermUtil.reportQuantity("Number of function calls  ", this.numberOfAotCalls, "");
+        Terminal.nextln();
     }
 
     public String toString() {

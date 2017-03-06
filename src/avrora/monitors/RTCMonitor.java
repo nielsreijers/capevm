@@ -9,6 +9,7 @@ import cck.util.Util;
 import cck.text.Verbose;
 import cck.text.Printer;
 import cck.text.Terminal;
+import cck.text.TermUtil;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,6 +74,8 @@ public class RTCMonitor extends MonitorFactory {
         }
 
         public void report() {
+            TermUtil.printSeparator("RTC Trace ");
+            rtctrace.report();
             if (rtctrace != null) {
                 String filename = FILENAME.get();
                 if (filename == "") {
