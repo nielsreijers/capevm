@@ -29,6 +29,9 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_RUNTIMEMETHODCALLRETURN   45
 #define AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS   46
 #define AVRORA_RTC_PRINTCURRENTAOTCALLSTACK  47
+#define AVRORA_RTC_STARTCOUNTINGCALLS        48
+#define AVRORA_RTC_STOPCOUNTINGCALLS         49
+
 #define AVRORA_RTC_BEEP                      50
 #define AVRORA_RTC_TERMINATEONEXCEPTION      51
 #define AVRORA_RTC_EMITPROLOGUE              52
@@ -135,6 +138,15 @@ static AVRORA_PRINT_INLINE void avroraRTCPrintAllRuntimeAOTCalls()
 static AVRORA_PRINT_INLINE void avroraRTCCurrentAOTCallStack()
 {
 	rtcMonitorVariable[0] = AVRORA_RTC_PRINTCURRENTAOTCALLSTACK;	
+}
+
+static AVRORA_PRINT_INLINE void avroraRTCStartCountingCalls()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_STARTCOUNTINGCALLS;	
+}
+static AVRORA_PRINT_INLINE void avroraRTCStopCountingCalls()
+{
+	rtcMonitorVariable[0] = AVRORA_RTC_STOPCOUNTINGCALLS;	
 }
 static AVRORA_PRINT_INLINE void avroraRTCRuntimeBeep(uint8_t number)
 {

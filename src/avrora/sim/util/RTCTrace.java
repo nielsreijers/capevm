@@ -1,7 +1,6 @@
 package avrora.sim.util;
 
-import java.util.ArrayList;
-import java.util.Stack;
+import java.util.*;
 import java.net.URLEncoder;
 import avrora.sim.*;
 import avrora.arch.AbstractInstr;
@@ -36,6 +35,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int AVRORA_RTC_RUNTIMEMETHODCALLRETURN   = 45;
     final static int AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS   = 46;
     final static int AVRORA_RTC_PRINTCURRENTAOTCALLSTACK  = 47;
+    final static int AVRORA_RTC_STARTCOUNTINGCALLS        = 48;
+    final static int AVRORA_RTC_STOPCOUNTINGCALLS         = 49;
+
     final static int AVRORA_RTC_BEEP                      = 50;
     final static int AVRORA_RTC_TERMINATEONEXCEPTION      = 51;
     final static int AVRORA_RTC_EMITPROLOGUE              = 52;
@@ -610,7 +612,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
     private boolean patchingBranches = false;
     private String currentInfusion = "not yet set";
     private Stack<String> callStack = new Stack<String>();
+    private boolean countCalls = false;
     private int numberOfAotCalls = 0;
+    private HashMap<String, Integer> numberOfAotCallsPerMethod = new HashMap<String, Integer>();
 
     public RTCTrace() {
         callStack.push("null");
@@ -801,7 +805,14 @@ public class RTCTrace extends Simulator.Watch.Empty {
                         Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + methodImplId + "\n\r\n\r");
                     }
                     callStack.push(callee);
-                    numberOfAotCalls++;
+                    if (countCalls) {
+                        numberOfAotCalls++;
+                        if (numberOfAotCallsPerMethod.keySet().contains(callee)) {
+                            numberOfAotCallsPerMethod.put(callee, numberOfAotCallsPerMethod.get(callee)+1);
+                        } else {
+                            numberOfAotCallsPerMethod.put(callee, 1);                            
+                        }
+                    }
                 break;
                 case AVRORA_RTC_RUNTIMEMETHODCALLRETURN:
                     callee = callStack.pop();
@@ -815,6 +826,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
                 break;
                 case AVRORA_RTC_PRINTCURRENTAOTCALLSTACK:
                     printAOTCallStack(state);
+                break;
+                case AVRORA_RTC_STARTCOUNTINGCALLS:
+                    numberOfAotCalls = 0;
+                    numberOfAotCallsPerMethod = new HashMap<String, Integer>();
+                    Terminal.print("Start counting funcalls and reset counter.");
+                    countCalls = true;
+                break;
+                case AVRORA_RTC_STOPCOUNTINGCALLS:
+                    Terminal.print("Stop counting funcalls. Counter value: " + numberOfAotCalls);
+                    countCalls = false;
                 break;
                 case AVRORA_RTC_BEEP:
                     int number = getDataInt8(a, data_addr+1);
@@ -868,8 +889,37 @@ public class RTCTrace extends Simulator.Watch.Empty {
         Terminal.print("____ END OF AOT CALL STACK.\n");
     }
 
+    private static HashMap<String, Integer> sortByValues(HashMap<String, Integer> map) {
+        List list = new LinkedList(map.entrySet());
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry<String, Integer>) (o2)).getValue()).compareTo(((Map.Entry<String, Integer>) (o1)).getValue());
+            }
+        });
+        HashMap<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Map.Entry<String, Integer> entry = (Map.Entry<String, Integer>)it.next();
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+
     public void report() {
         TermUtil.reportQuantity("Number of function calls  ", this.numberOfAotCalls, "");
+        int i = 0;
+        HashMap<String, Integer> sorted = sortByValues(numberOfAotCallsPerMethod);
+        Terminal.print("Top 10:\n");
+        int top10total = 0;
+        for(String callee : sorted.keySet()) {
+            i++;
+            Terminal.print("" + callee + ": " + sorted.get(callee) + " calls.\n");
+            top10total += sorted.get(callee);
+            if (i>=10) {
+                Terminal.print("....\n");
+                break;
+            }
+        }
+        Terminal.print("Total calls for these methods : " + top10total + " calls, missing: " + (numberOfAotCalls - top10total) + " calls.\n");
         printAOTCallStack(null);
         Terminal.nextln();
     }
