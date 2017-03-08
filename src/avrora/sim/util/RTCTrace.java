@@ -635,6 +635,14 @@ public class RTCTrace extends Simulator.Watch.Empty {
         int infusionNameAddress;
         int c;
         String caller, callee;
+        boolean printOutput = false;
+
+
+        StringBuffer buf = new StringBuffer();
+        StringBuffer fil = new StringBuffer();
+        SimUtil.getIDTimeString(buf, sim);
+        buf.append("[avrora.rtc] " + value + " ");
+
 
         // Check if we're turning the patchingBranches switch on or off
         switch (value) {
@@ -647,6 +655,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
                 return;
             }
         }
+
+
 
         if (!patchingBranches) {
             switch (value) {
@@ -663,7 +673,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     String methodDefInfusion = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefInfusion(currentMethod.MethodImplId);
                     String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
                     String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
-                    Terminal.print("[avrora.rtc] Start method " + currentMethod.MethodImplId + " " + this.currentInfusion + "." + methodName + " " + methodSignature + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
+                    buf.append("Start method " + currentMethod.MethodImplId + " " + this.currentInfusion + "." + methodName + " " + methodSignature + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
+                    Terminal.print(buf.toString());
                 }
                 break;
                 case AVRORA_RTC_JAVAOPCODE: {
@@ -724,12 +735,13 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     int numberOfBranchTargets = getDataInt8(a, data_addr+7);
 
                     if (currentMethod.StartAddress == 0) {
-                        Terminal.print("[avrora.rtc] No function start address?? Did you forget to send the AVRORA_RTC_STARTMETHOD command?");
+                        buf.append("No function start address?? Did you forget to send the AVRORA_RTC_STARTMETHOD command?");
                     } else {
                         addFunctionDisassembly(state, currentMethod, numberOfBranchTargets);
                     }
 
-                    Terminal.print(" ends at 0x" + Integer.toHexString(currentMethod.EndAddress) + ", AOT size: " + (currentMethod.EndAddress - currentMethod.StartAddress) + ", JVM size: " + currentMethod.JvmMethodSize + "\n\r");
+                    buf.append(" ends at 0x" + Integer.toHexString(currentMethod.EndAddress) + ", AOT size: " + (currentMethod.EndAddress - currentMethod.StartAddress) + ", JVM size: " + currentMethod.JvmMethodSize + "\n\r");
+                    Terminal.print(buf.toString());
                 }
                 break;
                 case AVRORA_RTC_STACKCACHESTATE:
@@ -763,7 +775,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
                 case AVRORA_RTC_INIT:
                     if (this.initialised == true) {
                         // Init called twice: probably a crash
-                        Terminal.printRed("[avrora.rtc] init called more than once??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
+                        Terminal.printRed("init called more than once??\nPROBABLY BECAUSE OF A CRASH: ABORTING\n");
                         System.exit(-1);
                     }
                     this.initialised = true;
@@ -780,29 +792,34 @@ public class RTCTrace extends Simulator.Watch.Empty {
                             this.currentInfusion += Character.toString((char)c);
                         }
                     } while (c != 0);
-                    Terminal.print("\n\r####################################### RTC INFUSION " + this.currentInfusion + "\n\r\n\r");
+                    buf.append("\n\r####################################### RTC INFUSION " + this.currentInfusion + "\n\r\n\r");
+                    Terminal.print(buf.toString());
                 break;
                 case AVRORA_RTC_RUNTIMEMETHODCALL:
+                    int infusionAddress = ((int)getDataInt8(a, data_addr+1) & 0xFF)
+                                                            + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8);
+
+                    int entity_id = getDataInt8(a, data_addr+3);
+                    int infusionHeaderAddress = getDataInt16(a, infusionAddress); // the pointer to the header is the first field in the struct _dj_infusion.
+                    // #define dj_di_header_getInfusionName(pointer) (pointer + 4)
+                    infusionNameAddress = infusionHeaderAddress+4;
+
                     String infusionName = "";
-                    infusionNameAddress = ((int)getDataInt8(a, data_addr+1) & 0xFF)
-                                            + (((int)getDataInt8(a, data_addr+2) & 0xFF) << 8)
-                                            + (((int)getDataInt8(a, data_addr+3) & 0xFF) << 16)
-                                            + (((int)getDataInt8(a, data_addr+4) & 0xFF) << 24);
                     do {
                         c=getProgramInt8(a, infusionNameAddress++);
                         if (c != 0) {
                             infusionName += Character.toString((char)c);
                         }
                     } while (c != 0);
-                    int methodImplId = ((int)getDataInt8(a, data_addr+5) & 0xFF);
-                    String methodDefId = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefId(methodImplId);
-                    String methodDefInfusion = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefInfusion(methodImplId);
+                    String methodDefId = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefId(entity_id);
+                    String methodDefInfusion = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefInfusion(entity_id);
                     String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
                     String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
                     caller = callStack.peek();
                     callee = infusionName + "." + methodName + " " + methodSignature;
                     if (this.printAllRuntimeAotCalls) {
-                        Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + methodImplId + "\n\r\n\r");
+                        buf.append("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + entity_id + "\n\r\n\r");
+                        Terminal.print(buf.toString());
                     }
                     callStack.push(callee);
                     if (countCalls) {
@@ -818,7 +835,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     callee = callStack.pop();
                     caller = callStack.peek();
                     if (this.printAllRuntimeAotCalls) {
-                        Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME RETURN " + caller + " <- " + callee + "\n\r\n\r");
+                        buf.append("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME RETURN " + caller + " <- " + callee + "\n\r\n\r");
+                        Terminal.print(buf.toString());
                     }
                 break;
                 case AVRORA_RTC_PRINTALLRUNTIMEAOTCALLS:
@@ -830,16 +848,19 @@ public class RTCTrace extends Simulator.Watch.Empty {
                 case AVRORA_RTC_STARTCOUNTINGCALLS:
                     numberOfAotCalls = 0;
                     numberOfAotCallsPerMethod = new HashMap<String, Integer>();
-                    Terminal.print("Start counting funcalls and reset counter.");
+                    buf.append("Start counting funcalls and reset counter.\n");
+                    Terminal.print(buf.toString());
                     countCalls = true;
                 break;
                 case AVRORA_RTC_STOPCOUNTINGCALLS:
-                    Terminal.print("Stop counting funcalls. Counter value: " + numberOfAotCalls);
+                    buf.append("Stop counting funcalls. Counter value: " + numberOfAotCalls + "\n");
+                    Terminal.print(buf.toString());
                     countCalls = false;
                 break;
                 case AVRORA_RTC_BEEP:
                     int number = getDataInt8(a, data_addr+1);
-                    Terminal.print("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " BEEP BEEP " + number + "\n\r\n\r");
+                    buf.append("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " BEEP BEEP " + number + "\n\r\n\r");
+                    Terminal.print(buf.toString());
                 break;
                 case AVRORA_RTC_TERMINATEONEXCEPTION:
                     int exceptionType = getDataInt16(a, data_addr+1);
@@ -862,7 +883,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
                         case 15 : exceptionName = "STRINGINDEXOUTOFBOUNDS_EXCEPTION"; break;
                         case 16 : exceptionName = "VIRTUALMACHINE_ERROR"; break;
                     }
-                    Terminal.print("\n\rKAPOT KAPOT KAPOT KAPOT " + exceptionType + " " + exceptionName + "\n\r\n\r");
+                    buf.append("\n\rKAPOT KAPOT KAPOT KAPOT " + exceptionType + " " + exceptionName + "\n\r\n\r");
+                    Terminal.print(buf.toString());
                     printAOTCallStack(state);
                     System.exit(exceptionType);
                 break;
@@ -870,7 +892,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     emittingPrologue = true;
                 break;
                 default:
-                    Terminal.print("[avrora.rtc] unknown command " + value + "\n\r");
+                    buf.append("[avrora.rtc] unknown command " + value + "\n\r");
+                    Terminal.print(buf.toString());
                 break;
             }
         }

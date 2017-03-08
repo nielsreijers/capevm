@@ -118,13 +118,11 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStackCacheSkipInstruction(uint8_t 
 	rtcMonitorVariable[1] = reason;
 	rtcMonitorVariable[0] = AVRORA_RTC_STACKCACHESKIPINSTRUCTION;	
 }
-static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCall(uint32_t infusionName, uint8_t method_impl_id)
+static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCall(void *infusion, uint8_t entity_id)
 {
-	rtcMonitorVariable[1] = (infusionName) & 0xFF;
-	rtcMonitorVariable[2] = ((infusionName) >> 8)& 0xFF;
-	rtcMonitorVariable[3] = ((infusionName) >> 16)& 0xFF;
-	rtcMonitorVariable[4] = ((infusionName) >> 24)& 0xFF;
-	rtcMonitorVariable[5] = method_impl_id;
+	rtcMonitorVariable[1] = ((uint16_t)infusion) & 0xFF;
+	rtcMonitorVariable[2] = (((uint16_t)infusion) >> 8)& 0xFF;
+	rtcMonitorVariable[3] = entity_id;
 	rtcMonitorVariable[0] = AVRORA_RTC_RUNTIMEMETHODCALL;	
 }
 static AVRORA_PRINT_INLINE void avroraRTCRuntimeMethodCallReturn()
