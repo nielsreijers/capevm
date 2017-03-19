@@ -251,6 +251,9 @@ public class MemPrint extends Simulator.Watch.Empty {
                     fil.append("PANIC!!!! \n"); buf.append("PANIC!!!! \n");
                     int paniccode = a.getDataByte(base + 1);
                     String panictext = "";
+
+                    printDarjeelingHeap(state);
+
                     // RUNLEVEL_PANIC = 3;
                     switch(paniccode) {
                         case 3+ 0: panictext = "DJ_PANIC_OUT_OF_MEMORY                            "; break;
@@ -318,6 +321,47 @@ public class MemPrint extends Simulator.Watch.Empty {
                     if (!log.equals("")) printToFile(fil.toString());//print in file
                 }
     }
+
+    public void printDarjeelingHeap(State state) {
+        Simulator sim = state.getSimulator();
+        AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
+
+        final SourceMapping map = sim.getProgram().getSourceMapping();
+        final SourceMapping.Location heapBaseLocation = map.getLocation("heap_base");
+        final SourceMapping.Location leftPointerLocation = map.getLocation("left_pointer");
+        final int heapBaseAddress = heapBaseLocation.vma_addr & 0xffff;
+        final int heapBase = a.getDataUShort(heapBaseAddress);
+        final int leftPointerAddress = leftPointerLocation.vma_addr & 0xffff;
+        final int leftPointer = a.getDataUShort(leftPointerAddress);
+
+        int finger = heapBase;
+        System.out.println("========= HEAP DUMP ========");
+        System.out.println("heap_base: " + StringUtil.toHex(heapBaseAddress,4));
+        System.out.println("left_pointer: " + StringUtil.toHex(leftPointer,4)); 
+        while (finger < leftPointer) {
+                // struct _heap_chunk
+                // {
+                //     uint16_t color:2;
+                //     uint16_t size:14;
+                //     uint16_t shift;
+                //     uint8_t id;
+                // }
+
+            int colorAndSize = a.getDataUShort(finger);
+            int color = colorAndSize & 0x03;
+            int size = colorAndSize >>> 2;
+            int shift = a.getDataUShort(finger+2);
+            int id = a.getDataByte(finger + 4);
+
+            System.out.println(StringUtil.toHex(finger, 4) + " color: " + color + " size: " + size + " id: " + id + " shift: " + shift);
+            if (size == 0) {
+                break;
+            }
+            finger += size;
+        }
+        System.out.println("===== END OF HEAP DUMP =====");
+    }
+
      /**
      * The <code>PrintToFile</code> method prints to a file the character sent to it
      * @param str string to print

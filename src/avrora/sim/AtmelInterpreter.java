@@ -244,6 +244,17 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
             return readSRAM(UNINSTRUMENTED, address);
         }
 
+        public int getDataUShort(int address) {
+            return (((int)getDataByte(address)) & 0xff)
+                    + ((((int)getDataByte(address + 1)) & 0xff) << 8);
+        }
+
+        public int getDataUInt(int address) {
+            return (((int)getDataByte(address)) & 0xff)
+                    + ((((int)getDataByte(address + 1)) & 0xff) << 8)
+                    + ((((int)getDataByte(address + 2)) & 0xff) << 16)
+                    + ((((int)getDataByte(address + 3)) & 0xff) << 24);
+        }
         /**
          * The <code>getProgramByte()</code> method reads a byte value from the program (Flash) memory. The flash
          * memory generally stores read-only values and the instructions of the program. Care should be taken that
@@ -660,6 +671,18 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      */
     public byte getDataByte(int address) {
         return readSRAM(INSTRUMENTED, address);
+    }
+
+    public int getDataUShort(int address) {
+        return (((int)getDataByte(address)) & 0xff)
+                + ((((int)getDataByte(address + 1)) & 0xff) << 8);
+    }
+
+    public int getDataUInt(int address) {
+        return (((int)getDataByte(address)) & 0xff)
+                + ((((int)getDataByte(address + 1)) & 0xff) << 8)
+                + ((((int)getDataByte(address + 2)) & 0xff) << 16)
+                + ((((int)getDataByte(address + 3)) & 0xff) << 24);
     }
 
     private byte readSRAM(boolean w, int addr) {
