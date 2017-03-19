@@ -277,6 +277,7 @@ public class MemPrint extends Simulator.Watch.Empty {
                         case 3+19: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_ARRAY_COMPONENT   "; break;
                         case 3+20: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_THREAD_FRAME_NULL "; break;
                         case 3+21: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_NO_RUNTIME_CLASS  "; break;
+                        case 3+22: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_NOT_A_HEAP_PTR    "; break;
                         case 3+50: panictext = "DJ_PANIC_AOT_ASM_ERROR                            "; break;
                         case 3+51: panictext = "DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE        "; break;
                         default: panictext = "UNKNOWN PANIC CODE: " + paniccode;                                ; break;
