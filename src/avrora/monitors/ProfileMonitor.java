@@ -37,6 +37,7 @@ import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.*;
 import cck.stat.StatUtil;
 import cck.text.*;
 import cck.util.Option;
@@ -84,7 +85,9 @@ public class ProfileMonitor extends MonitorFactory {
             public long time;
         }
         public final Stack<CallStackRecord> callstack;
-        public int expectedNextPc = 0;
+        private int expectedNextPc = 0;
+        private int returnInstructionPc = 0;
+        private int returnInstructionSp = 0;
 
         Mon(Simulator s) {
             simulator = s;
@@ -167,9 +170,43 @@ public class ProfileMonitor extends MonitorFactory {
 
                 if (expectedNextPc != 0 && pc != expectedNextPc) {
                     if (pc != 0x40) { // We may be at 0x40 because of an interrupt
-                        Terminal.println(String.format("UNEXPECTED PC: 0x%s!!", Integer.toHexString(pc)));
-                        Terminal.println(String.format("Expected PC: 0x%s", Integer.toHexString(expectedNextPc)));
-                        Terminal.println(String.format("Current SP: 0x%s ", Integer.toHexString(state.getSP())));
+                        Terminal.println(String.format("UNEXPECTED NEXT PC: 0x%s!!", Integer.toHexString(pc)));
+                        Terminal.println(String.format("Expected next PC: 0x%s", Integer.toHexString(expectedNextPc)));
+                        Terminal.println(String.format("Return instruction PC: 0x%s ", Integer.toHexString(returnInstructionPc)));
+                        Terminal.println(String.format("SP at return instruction: 0x%s ", Integer.toHexString(returnInstructionSp)));                        Terminal.println(String.format("Current SP: 0x%s ", Integer.toHexString(state.getSP())));
+
+                        Terminal.println("R0:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R0),2) + " ");   
+                        Terminal.println("R1:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R1),2) + " ");   
+                        Terminal.println("R2:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R2),2) + " ");   
+                        Terminal.println("R3:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R3),2) + " ");   
+                        Terminal.println("R4:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R4),2) + " ");   
+                        Terminal.println("R5:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R5),2) + " ");   
+                        Terminal.println("R6:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R6),2) + " ");   
+                        Terminal.println("R7:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R7),2) + " ");   
+                        Terminal.println("R8:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R8),2) + " ");   
+                        Terminal.println("R9:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R9),2) + " ");   
+                        Terminal.println("R10:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R10),2) + " "); 
+                        Terminal.println("R11:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R11),2) + " "); 
+                        Terminal.println("R12:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R12),2) + " "); 
+                        Terminal.println("R13:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R13),2) + " "); 
+                        Terminal.println("R14:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R14),2) + " "); 
+                        Terminal.println("R15:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R15),2) + " "); 
+                        Terminal.println("R16:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R16),2) + " "); 
+                        Terminal.println("R17:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R17),2) + " "); 
+                        Terminal.println("R18:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R18),2) + " "); 
+                        Terminal.println("R19:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R19),2) + " "); 
+                        Terminal.println("R20:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R20),2) + " "); 
+                        Terminal.println("R21:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R21),2) + " "); 
+                        Terminal.println("R22:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R22),2) + " "); 
+                        Terminal.println("R23:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R23),2) + " "); 
+                        Terminal.println("R24:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R24),2) + " "); 
+                        Terminal.println("R25:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R25),2) + " "); 
+                        Terminal.println("R26:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R26),2) + " "); 
+                        Terminal.println("R27:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R27),2) + " "); 
+                        Terminal.println("R28:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R28),2) + " "); 
+                        Terminal.println("R29:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R29),2) + " "); 
+                        Terminal.println("R30:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R30),2) + " "); 
+
                         System.exit(0);
                     }
                     expectedNextPc = 0;
@@ -198,6 +235,8 @@ public class ProfileMonitor extends MonitorFactory {
                     CallStackRecord r = callstack.pop();
                     isubroutinetime[r.sourcePC] += state.getCycles() - r.time;
                     expectedNextPc = r.returnAddress;
+                    returnInstructionPc = pc;
+                    returnInstructionSp = state.getSP();
                     // printRet(pc, r.sourcePC);
                 }
             }

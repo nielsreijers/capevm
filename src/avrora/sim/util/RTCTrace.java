@@ -500,7 +500,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
     }
 
     static private int getDataInt8(AtmelInterpreter a, int offset) {
-        final int l = a.getDataByte(offset);
+        final int l = ((int)a.getDataByte(offset)) & 0xff;
         return l;
     }
     static private int getDataInt16(AtmelInterpreter a, int offset) {

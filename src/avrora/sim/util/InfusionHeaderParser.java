@@ -8,6 +8,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 import java.io.File;
 import java.util.HashMap;
+import java.lang.Thread;
 
 public class InfusionHeaderParser {
 	public static String basedir = "BASE DIR NOT SET";
@@ -32,7 +33,9 @@ public class InfusionHeaderParser {
 	public InfusionHeaderParser(String name) {
 		try {
 			if (name==null) {
-				System.exit(1);
+				System.err.println("name NULL in InfusionHeaderParser constructor!");
+				Thread.dumpStack();
+				System.exit(11);
 			}
 			this.name = name;
 			String headerPath = basedir + "/infusion-" + name + "/" + name + ".dih";
