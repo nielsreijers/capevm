@@ -313,7 +313,6 @@ public class MemPrint extends Simulator.Watch.Empty {
                 break;
                 default:
                     fil.append("beep:" + value); buf.append("beep:" + value);
-
                 break;
             }
 
@@ -321,6 +320,33 @@ public class MemPrint extends Simulator.Watch.Empty {
                     if (!ret & fil.length() != 0) Terminal.println(buf.toString());//print in screen if not return line and something to print
                     if (!log.equals("")) printToFile(fil.toString());//print in file
                 }
+    }
+
+    public String chunkIdToString(State state, int id) {
+        switch (id) {
+            case 0: return "FREE";
+            case 1: return "INVALID";
+            case 2: return "MONITOR_BLOCK";
+            case 3: return "VM";
+            case 4: return "FRAME";
+            case 5: return "THREAD";
+            case 6: return "INFUSION";
+            case 7: return "REFARRAY";
+            case 8: return "INTARRAY";
+            case 9: return "WUCLASS";
+            case 10: return "WUOBJECT";
+            case 11: return "RTCNATIVETESTDATA";
+            case 12: return "WKREPROG_BUFFER";
+            case 13: return "RTC_TSSTATE";
+        }
+        StukjeDarjeeling.DjGlobalId gid = StukjeDarjeeling.getGlobalIdFromChunkId(state, id);
+        if (gid != null) {
+            String infusionName = gid.infusionName;
+            String className = InfusionHeaderParser.getParser(infusionName).getClassname(gid.entity_id);
+            return "" + infusionName + "|" + className;
+        } else {
+            return "unknown (chunk id " + id + ")";
+        }
     }
 
     public void printDarjeelingHeap(State state) {
@@ -354,7 +380,7 @@ public class MemPrint extends Simulator.Watch.Empty {
             int shift = a.getDataUShort(finger+2);
             int id = a.getDataByte(finger + 4);
 
-            System.out.println(StringUtil.toHex(finger, 4) + " color: " + color + " size: " + size + " id: " + id + " shift: " + shift);
+            System.out.println(StringUtil.toHex(finger, 4) + " color: " + color + " size: " + size + " shift: " + shift + " id: " + chunkIdToString(state, id));
             if (size == 0) {
                 break;
             }

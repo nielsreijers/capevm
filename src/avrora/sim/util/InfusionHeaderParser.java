@@ -29,6 +29,7 @@ public class InfusionHeaderParser {
 	private NodeList methodImpl_nList;
 	private NodeList methodDef_nList;
 	private NodeList referencedInfusion_nList;
+	private NodeList classDef_nList;
 
 	public InfusionHeaderParser(String name) {
 		try {
@@ -64,6 +65,9 @@ public class InfusionHeaderParser {
 			Element referencedInfusionList = (Element)referencedInfusionList_nList.item(0);
 			this.referencedInfusion_nList = referencedInfusionList.getElementsByTagName("infusion");
 
+			NodeList classList_nList = infusion.getElementsByTagName("classlist");
+			Element classList = (Element)classList_nList.item(0);
+			this.classDef_nList = classList.getElementsByTagName("classdef");
 		} catch (Exception ex) {
 			System.err.println(ex.toString());
 			System.exit(1);
@@ -85,6 +89,35 @@ public class InfusionHeaderParser {
 		}
 	}
 
+	public String getClassname (int classDefId) {
+		return getClassname(Integer.toString(classDefId));
+	}
+
+	public String getClassname (String classDefId) {
+		for (int classIdx = 0; classIdx < classDef_nList.getLength(); classIdx++) {
+			Element e = (Element)classDef_nList.item(classIdx);
+			if (e.getAttribute("entity_id").equals(classDefId)) {
+				return e.getAttribute("name");
+			}
+		}
+		return null;			
+	}
+
+	public String getMethodImpl_FullSignatureWithInfusion (int methodImplId) {
+        return name + "|" + getMethodImpl_FullSignature(methodImplId);
+	}
+
+	public String getMethodImpl_FullSignature (int methodImplId) {
+        String methodDefId = getMethodImpl_MethodDefId(methodImplId);
+        String methodDefInfusion = getMethodImpl_MethodDefInfusion(methodImplId);
+        String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
+        String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
+        String parentClassId = getMethodImpl_ParentClassId(methodImplId);
+        String parentClassInfusion = getMethodImpl_ParentClassInfusion(methodImplId);
+        String className = InfusionHeaderParser.getParser(parentClassInfusion).getClassname(parentClassId);
+        return className + "." + methodName + " " + methodSignature;
+	}
+
 	public String getMethodImpl_MethodDefId (int methodImplId) {
 		for (int implIdx = 0; implIdx < methodImpl_nList.getLength(); implIdx++) {
 			Element e = (Element)methodImpl_nList.item(implIdx);
@@ -101,6 +134,27 @@ public class InfusionHeaderParser {
 			Element e = (Element)methodImpl_nList.item(implIdx);
 			if (e.getAttribute("entity_id").equals(Integer.toString(methodImplId))) {
 				return e.getAttribute("methoddef.infusion");
+			}
+		}
+		return null;			
+	}
+
+	public String getMethodImpl_ParentClassId (int methodImplId) {
+		for (int implIdx = 0; implIdx < methodImpl_nList.getLength(); implIdx++) {
+			Element e = (Element)methodImpl_nList.item(implIdx);
+			if (e.getAttribute("entity_id").equals(Integer.toString(methodImplId))) {
+				return e.getAttribute("parentclass.entity_id");
+			}
+		}
+		return null;			
+	}
+
+	public String getMethodImpl_ParentClassInfusion (int methodImplId) {
+		Element methodImpl = null;
+		for (int implIdx = 0; implIdx < methodImpl_nList.getLength(); implIdx++) {
+			Element e = (Element)methodImpl_nList.item(implIdx);
+			if (e.getAttribute("entity_id").equals(Integer.toString(methodImplId))) {
+				return e.getAttribute("parentclass.infusion");
 			}
 		}
 		return null;			

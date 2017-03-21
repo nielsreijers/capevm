@@ -430,8 +430,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_ARETURN: return "JVM_ARETURN";
             case JVM_RETURN: return "JVM_RETURN";
             case JVM_INVOKEVIRTUAL:   referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return   "JVM_INVOKEVIRTUAL " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodDef_name_and_signature(opcode[2]));
-            case JVM_INVOKESPECIAL:   referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return   "JVM_INVOKESPECIAL " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_name_and_signature(opcode[2]));
-            case JVM_INVOKESTATIC:    referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return    "JVM_INVOKESTATIC " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_name_and_signature(opcode[2]));
+            case JVM_INVOKESPECIAL:   referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return   "JVM_INVOKESPECIAL " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_FullSignature(opcode[2]));
+            case JVM_INVOKESTATIC:    referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return    "JVM_INVOKESTATIC " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_FullSignature(opcode[2]));
             case JVM_INVOKEINTERFACE: referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return "JVM_INVOKEINTERFACE " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodDef_name_and_signature(opcode[2]));
             case JVM_NEW: return "JVM_NEW           Infusion:" + opcode[1] + " Class:" + opcode[2];
             case JVM_NEWARRAY: return "JVM_NEWARRAY     Element type:" + opcode[1];
@@ -669,11 +669,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     branchTargetCounter = 0;
                     emittingPrologue = false;
 
-                    String methodDefId = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefId(currentMethod.MethodImplId);
-                    String methodDefInfusion = InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_MethodDefInfusion(currentMethod.MethodImplId);
-                    String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
-                    String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
-                    buf.append("Start method " + currentMethod.MethodImplId + " " + this.currentInfusion + "." + methodName + " " + methodSignature + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
+                    buf.append("Start method " + InfusionHeaderParser.getParser(currentMethod.Infusion).getMethodImpl_FullSignature(currentMethod.MethodImplId) + " at 0x" + Integer.toHexString(currentMethod.StartAddress) + ": ");
                     Terminal.print(buf.toString());
                 }
                 break;
@@ -811,12 +807,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
                             infusionName += Character.toString((char)c);
                         }
                     } while (c != 0);
-                    String methodDefId = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefId(entity_id);
-                    String methodDefInfusion = InfusionHeaderParser.getParser(infusionName).getMethodImpl_MethodDefInfusion(entity_id);
-                    String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
-                    String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
                     caller = callStack.peek();
-                    callee = infusionName + "." + methodName + " " + methodSignature;
+                    callee = InfusionHeaderParser.getParser(infusionName).getMethodImpl_FullSignature(entity_id);
                     if (this.printAllRuntimeAotCalls) {
                         buf.append("____" + Integer.toHexString(state.getSP()) + " " + callStack.size() + " RUNTIME CALL   " + caller + " -> " + callee + "   entity_id " + entity_id + "\n\r\n\r");
                         Terminal.print(buf.toString());
@@ -1131,16 +1123,14 @@ public class RTCTrace extends Simulator.Watch.Empty {
         for (MethodImpl method : methodImpls) {
             String methodDefId = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefId(method.MethodImplId);
             String methodDefInfusion = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefInfusion(method.MethodImplId);
-            String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_name(methodDefId);
-            String methodSignature = InfusionHeaderParser.getParser(methodDefInfusion).getMethodDef_signature(methodDefId);
+            String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodImpl_FullSignatureWithInfusion(method.MethodImplId);
             buf.append("    <methodImpl\n\r");
             buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"");
             buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\"");
-            buf.append("            method=\"" + urlencode(method.Infusion) + "." + urlencode(methodName) + " " + methodSignature + "\"\n\r");
+            buf.append("            method=\"" + urlencode(methodName) + "\"\n\r");
             buf.append("            methodImplId=\"" + method.MethodImplId + "\"\n\r");
             buf.append("            methodDefId=\"" + methodDefId + "\"\n\r");
             buf.append("            methodDefInfusion=\"" + methodDefInfusion + "\"\n\r");
-            buf.append("            methodSignature=\"" + methodSignature + "\"\n\r");
             buf.append("            startAddress=\"0x" + Integer.toHexString(method.StartAddress) + "\"\n\r");
             buf.append("            endAddress=\"0x" + Integer.toHexString(method.EndAddress) + "\"\n\r");
             buf.append("            branchCount=\"" + (method.BranchCount) + "\"\n\r");
