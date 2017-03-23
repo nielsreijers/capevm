@@ -34,6 +34,7 @@ package avrora.monitors;
 
 import avrora.arch.AbstractInstr;
 import avrora.core.Program;
+import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.arch.legacy.LegacyInstr;
@@ -41,6 +42,7 @@ import avrora.arch.legacy.*;
 import cck.stat.StatUtil;
 import cck.text.*;
 import cck.util.Option;
+import cck.util.Util;
 import java.util.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,6 +69,9 @@ public class ProfileMonitor extends MonitorFactory {
     public final Option.Str FILENAME = newOption("profile-data-filename", "",
             "This option specifies the name of the file to write the profile data to. If not " +
             "specifed, the output will be printed to the terminal.");
+    public final Option.Str VARIABLENAME = newOption("VariableName", "avrora_profilemonitor" ,
+            "This option specifies the name of the variable marking the base address of " +
+            "the memory region to watch.");
 
     /**
      * The <code>Monitor</code> inner class contains the probes and formatting code that
@@ -76,9 +81,10 @@ public class ProfileMonitor extends MonitorFactory {
         public final Simulator simulator;
         public final Program program;
 
-        public final long[] icount;
-        public final long[] itime;
-        public final long[] isubroutinetime;
+        public long[] icount;
+        public long[] itime;
+        public long[] isubroutinetime;
+        public boolean profilerActive;
         public class CallStackRecord {
             public int sourcePC;
             public int returnAddress;
@@ -93,12 +99,8 @@ public class ProfileMonitor extends MonitorFactory {
             simulator = s;
             program = s.getProgram();
 
-            // allocate a global array for the count of each instruction
-            icount = new long[program.program_end];
-            // allocate a global array for the cycles of each instruction
-            itime = new long[program.program_end];
-            // allocate a global array for the cycles consumed in a subroutine for each CALL instruction
-            isubroutinetime = new long[program.program_end];
+            // Initialise the counter arrays
+            resetCountersAndStart();
             // and a stack to keep track of CALLs/RETs
             callstack = new Stack<CallStackRecord>();
 
@@ -113,6 +115,29 @@ public class ProfileMonitor extends MonitorFactory {
                 // insert just the count probe
                 s.insertProbe(new CProbe());
             }
+
+            // Setup the watch to receive commands
+            final SourceMapping map = s.getProgram().getSourceMapping();
+            final SourceMapping.Location location = map.getLocation(VARIABLENAME.get());
+            if (location != null) {
+                // Strip any memory-region markers from the address.
+                int base = location.vma_addr & 0xffff;
+                s.insertWatch(new Watch(), base);
+            } else {
+                Util.userError("c-print monitor could not find variable \"" +
+                        VARIABLENAME.get() + "\"");
+            }
+        }
+
+        public void resetCountersAndStart() {
+            // allocate a global array for the count of each instruction
+            icount = new long[program.program_end];
+            // allocate a global array for the cycles of each instruction
+            itime = new long[program.program_end];
+            // allocate a global array for the cycles consumed in a subroutine for each CALL instruction
+            isubroutinetime = new long[program.program_end];
+            // start collecting data
+            profilerActive = true;
         }
 
         /**
@@ -128,8 +153,26 @@ public class ProfileMonitor extends MonitorFactory {
             }
 
             public void fire() {
-                icount[simulator.getState().getPC()]++;
-                simulator.insertEvent(this, period);
+                if (profilerActive) {
+                    icount[simulator.getState().getPC()]++;
+                    simulator.insertEvent(this, period);
+                }
+            }
+        }
+
+        public class Watch extends Simulator.Watch.Empty {
+            final static int AVRORA_PROFILE_RESET_AND_START = 1;
+            final static int AVRORA_PROFILE_STOP_COUNTING   = 2;
+
+            public void fireBeforeWrite(State state, int data_addr, byte value) {
+                switch (value) {
+                    case AVRORA_PROFILE_RESET_AND_START:
+                        resetCountersAndStart();
+                        break;
+                    case AVRORA_PROFILE_STOP_COUNTING:
+                        profilerActive = false;
+                        break;
+                }
             }
         }
 
@@ -165,7 +208,9 @@ public class ProfileMonitor extends MonitorFactory {
             }
 
             public void fireBefore(State state, int pc) {
-                icount[pc]++;
+                if (profilerActive) {
+                    icount[pc]++;
+                }
                 timeBegan = state.getCycles();
 
                 if (expectedNextPc != 0 && pc != expectedNextPc) {
@@ -228,12 +273,16 @@ public class ProfileMonitor extends MonitorFactory {
             }
 
             public void fireAfter(State state, int pc) {
-                itime[pc] += state.getCycles() - timeBegan;
+                if (profilerActive) {
+                    itime[pc] += state.getCycles() - timeBegan;
+                }
 
                 AbstractInstr inst = state.getInstr(pc);
                 if (inst instanceof LegacyInstr.RET) {
                     CallStackRecord r = callstack.pop();
-                    isubroutinetime[r.sourcePC] += state.getCycles() - r.time;
+                    if (profilerActive) {
+                        isubroutinetime[r.sourcePC] += state.getCycles() - r.time;
+                    }
                     expectedNextPc = r.returnAddress;
                     returnInstructionPc = pc;
                     returnInstructionSp = state.getSP();
@@ -249,7 +298,9 @@ public class ProfileMonitor extends MonitorFactory {
         public class CProbe extends Simulator.Probe.Empty {
 
             public void fireBefore(State state, int pc) {
-                icount[pc]++;
+                if (profilerActive) {
+                    icount[pc]++;
+                }
             }
         }
 
