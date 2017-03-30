@@ -267,6 +267,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_MARKLOOP_END = 221;
     final static int JVM_GETFIELD_A_FIXED = 222;
     final static int JVM_PUTFIELD_A_FIXED = 223;
+    final static int JVM_SIMUL = 224;
 
 
     final static LegacyDisassembler disasm = new LegacyDisassembler();
@@ -500,6 +501,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_MARKLOOP_END: return "JVM_MARKLOOP_END";
             case JVM_GETFIELD_A_FIXED: return "JVM_GETFIELD_A_FIXED";
             case JVM_PUTFIELD_A_FIXED: return "JVM_PUTFIELD_A_FIXED";
+            case JVM_SIMUL: return "JVM_SIMUL";
             default: return "UNKNOWN OPCODE " + opcode;
         }
     }
