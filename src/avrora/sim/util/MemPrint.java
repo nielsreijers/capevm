@@ -71,6 +71,7 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_PRINT_FLASH_STRING_POINTER       = 0xF;
     final byte AVRORA_PRINT_PANIC                      = 0x10;
     final byte AVRORA_PRINT_FREEHEAPMEMORY             = 0x11;
+    final byte AVRORA_PRINT_PC                         = 0x12;
 
     public MemPrint(int b, int m, String l) {
         base = b;
@@ -232,6 +233,9 @@ public class MemPrint extends Simulator.Watch.Empty {
                     break;
                 case AVRORA_PRINT_SP:
                     fil.append("SP:" + state.getSP()); buf.append("SP:" + state.getSP());
+                    break;
+                case AVRORA_PRINT_PC:
+                    fil.append("PC:" + state.getPC()); buf.append("PC:" + state.getPC());
                     break;
                 case 0:
                 case AVRORA_PRINT_REGS:

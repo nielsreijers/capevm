@@ -87,6 +87,7 @@ volatile uint8_t debugbuf1[5];
 #define AVRORA_PRINT_FLASH_STRING_POINTER       0xF
 #define AVRORA_PRINT_PANIC                      0x10
 #define AVRORA_PRINT_FREEHEAPMEMORY             0x11
+#define AVRORA_PRINT_PC                         0x12
 
 static AVRORA_PRINT_INLINE void avroraPrintSetVarType(uint8_t a)
 {
@@ -195,6 +196,10 @@ static AVRORA_PRINT_INLINE void avroraPrintR1()
 static AVRORA_PRINT_INLINE void avroraPrintSP()
 {
 	avroraPrintSetVarType(AVRORA_PRINT_SP);
+}
+static AVRORA_PRINT_INLINE void avroraPrintPC()
+{
+	avroraPrintSetVarType(AVRORA_PRINT_PC);
 }
 static AVRORA_PRINT_INLINE void avroraPrintRegs()
 {
