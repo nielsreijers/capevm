@@ -218,7 +218,16 @@ public class ProfileMonitor extends MonitorFactory {
                         Terminal.println(String.format("UNEXPECTED NEXT PC: 0x%s!!", Integer.toHexString(pc)));
                         Terminal.println(String.format("Expected next PC: 0x%s", Integer.toHexString(expectedNextPc)));
                         Terminal.println(String.format("Return instruction PC: 0x%s ", Integer.toHexString(returnInstructionPc)));
-                        Terminal.println(String.format("SP at return instruction: 0x%s ", Integer.toHexString(returnInstructionSp)));                        Terminal.println(String.format("Current SP: 0x%s ", Integer.toHexString(state.getSP())));
+                        Terminal.println(String.format("SP at return instruction: 0x%s ", Integer.toHexString(returnInstructionSp)));
+                        Terminal.println(String.format("Current SP: 0x%s ", Integer.toHexString(state.getSP())));
+                        Terminal.println("");
+
+                        Terminal.println("Call stack:");
+                        while (callstack.size() > 0) {
+                            CallStackRecord r = callstack.pop();
+                            Terminal.println(Integer.toHexString(r.returnAddress));
+                        }
+                        Terminal.println("");
 
                         Terminal.println("R0:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R0),2) + " ");   
                         Terminal.println("R1:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R1),2) + " ");   

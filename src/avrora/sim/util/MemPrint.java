@@ -133,6 +133,7 @@ public class MemPrint extends Simulator.Watch.Empty {
         fil.append("R28:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R28),2) + " "); buf.append("R28:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R28),2) + " ");
         fil.append("R29:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R29),2) + " "); buf.append("R29:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R29),2) + " ");
         fil.append("R30:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R30),2) + " "); buf.append("R30:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R30),2) + " ");
+        fil.append("R31:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R31),2) + " "); buf.append("R31:" + StringUtil.toHex(state.getRegisterByte(LegacyRegister.R31),2) + " ");
     }
 
     public void fireBeforeWrite(State state, int data_addr, byte value) {
