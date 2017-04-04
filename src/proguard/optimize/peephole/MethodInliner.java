@@ -220,13 +220,11 @@ implements   AttributeVisitor,
         }
 
         // Only inline the method if it is invoked once or if it is short.
-        else if ((inlineSingleInvocations ?
-                      MethodInvocationMarker.getInvocationCount(method) == 1 :
-                      codeAttribute.u4codeLength <= MAXIMUM_INLINED_CODE_LENGTH) &&
-                 estimatedResultingCodeLength + codeAttribute.u4codeLength <
-                 (microEdition ?
-                     MAXIMUM_RESULTING_CODE_LENGTH_JME :
-                     MAXIMUM_RESULTING_CODE_LENGTH_JSE))
+        else if (inlineSingleInvocations
+                    ? MethodInvocationMarker.getInvocationCount(method) == 1
+                    : ((codeAttribute.u4codeLength <= MAXIMUM_INLINED_CODE_LENGTH
+                            && estimatedResultingCodeLength + codeAttribute.u4codeLength < (microEdition ? MAXIMUM_RESULTING_CODE_LENGTH_JME : MAXIMUM_RESULTING_CODE_LENGTH_JSE))
+                       || hardcodedIncludeList(method.getName(clazz))))
         {
             if (DEBUG)
             {
@@ -249,6 +247,7 @@ implements   AttributeVisitor,
             inlined    = true;
             inlinedAny = true;
         } else {
+            System.err.println("NOT INLINING");
             if (inlineSingleInvocations && MethodInvocationMarker.getInvocationCount(method) != 1) System.err.println("NOT A SINGLE INVOCATION");
             if (!inlineSingleInvocations && codeAttribute.u4codeLength > MAXIMUM_INLINED_CODE_LENGTH) System.err.println("TOO LONG: " + codeAttribute.u4codeLength + " > " + MAXIMUM_INLINED_CODE_LENGTH);
             if (!(estimatedResultingCodeLength + codeAttribute.u4codeLength <
@@ -560,6 +559,28 @@ implements   AttributeVisitor,
     public void visitAnyMember(Clazz Clazz, Member member) {}
 
 
+    private boolean hardcodedExcludeList(String methodName) {
+        if (methodName.equals("core_bench_state")
+            || methodName.equals("core_bench_matrix")
+            || methodName.equals("intpat")
+            || methodName.equals("floatpat")
+            || methodName.equals("scipat")
+            || methodName.equals("errpat")
+            ) {
+            System.err.println("Hardcoded inline exclude list: " + methodName);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hardcodedIncludeList(String methodName) {
+        // if (methodName.equals("ee_isdigit")) {
+        //     System.err.println("Hardcoded inline include list: " + methodName);
+        //     return true;
+        // }
+        return false;
+    }
+
     public void visitProgramMethod(ProgramClass programClass, ProgramMethod programMethod)
     {
         int accessFlags = programMethod.getAccessFlags();
@@ -633,7 +654,10 @@ implements   AttributeVisitor,
             // a subset of the initialized superclasses.
             ((accessFlags & ClassConstants.ACC_STATIC) == 0 ||
              programClass.equals(targetClass)                        ||
-             initializedSuperClasses(targetClass).containsAll(initializedSuperClasses(programClass))))
+             initializedSuperClasses(targetClass).containsAll(initializedSuperClasses(programClass))) &&
+
+            !hardcodedExcludeList(programMethod.getName(programClass))
+            )
         {
             System.err.println("MAY INLINE " + programMethod.getName(programClass) + " (max length: " + Integer.parseInt(System.getProperty("maximum.inlined.code.length",      "8")) + ")");
             boolean oldInlining = inlining;
