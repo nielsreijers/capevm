@@ -268,6 +268,12 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_GETFIELD_A_FIXED = 222;
     final static int JVM_PUTFIELD_A_FIXED = 223;
     final static int JVM_SIMUL = 224;
+    final static int JVM_LIGHTWEIGHTMETHODPARAMETER_B = 225; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+    final static int JVM_LIGHTWEIGHTMETHODPARAMETER_C = 226; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+    final static int JVM_LIGHTWEIGHTMETHODPARAMETER_S = 227; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+    final static int JVM_LIGHTWEIGHTMETHODPARAMETER_I = 228; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+    final static int JVM_LIGHTWEIGHTMETHODPARAMETER_A = 229; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+    final static int JVM_INVOKELIGHT = 230;
 
 
     final static LegacyDisassembler disasm = new LegacyDisassembler();
@@ -502,6 +508,12 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_GETFIELD_A_FIXED: return "JVM_GETFIELD_A_FIXED";
             case JVM_PUTFIELD_A_FIXED: return "JVM_PUTFIELD_A_FIXED";
             case JVM_SIMUL: return "JVM_SIMUL";
+            case JVM_LIGHTWEIGHTMETHODPARAMETER_B: return "JVM_LIGHTWEIGHTMETHODPARAMETER_B"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+            case JVM_LIGHTWEIGHTMETHODPARAMETER_C: return "JVM_LIGHTWEIGHTMETHODPARAMETER_C"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+            case JVM_LIGHTWEIGHTMETHODPARAMETER_S: return "JVM_LIGHTWEIGHTMETHODPARAMETER_S"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+            case JVM_LIGHTWEIGHTMETHODPARAMETER_I: return "JVM_LIGHTWEIGHTMETHODPARAMETER_I"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+            case JVM_LIGHTWEIGHTMETHODPARAMETER_A: return "JVM_LIGHTWEIGHTMETHODPARAMETER_A"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
+            case JVM_INVOKELIGHT:     referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return     "JVM_INVOKELIGHT " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_FullSignature(opcode[2]));
             default: return "UNKNOWN OPCODE " + opcode;
         }
     }
