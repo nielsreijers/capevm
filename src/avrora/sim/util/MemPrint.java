@@ -284,9 +284,10 @@ public class MemPrint extends Simulator.Watch.Empty {
                         case 3+21: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_NO_RUNTIME_CLASS  "; break;
                         case 3+22: panictext = "DJ_PANIC_ILLEGAL_INTERNAL_STATE_NOT_A_HEAP_PTR    "; break;
                         case 3+23: panictext = "DJ_PANIC_NO_ADDRESS_FOUND_FOR_LIGHTWEIGHT_METHOD  "; break;
+                        case 3+24: panictext = "DJ_PANIC_LIGHTWEIGHT_METHOD_MUST_BE_LOCAL         "; break;
                         case 3+50: panictext = "DJ_PANIC_AOT_ASM_ERROR                            "; break;
                         case 3+51: panictext = "DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE        "; break;
-                        default: panictext = "UNKNOWN PANIC CODE: " + paniccode;                                ; break;
+                        default: panictext = "UNKNOWN PANIC CODE: " + paniccode                    ; break;
                     }
                     fil.append(panictext+"\n"); buf.append(panictext+"\n");
 
