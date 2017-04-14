@@ -94,7 +94,10 @@ public class StukjeDarjeeling {
         AtmelInterpreter a = (AtmelInterpreter) sim.getInterpreter();
 
 	    final SourceMapping map = sim.getProgram().getSourceMapping();
-    	final SourceMapping.Location vmLocation = map.getLocation("vm");
+    	final SourceMapping.Location vmLocation = map.getLocation("currentVm");
+    	if (vmLocation == null) {
+    		throw new Error("getGlobalIdFromChunkId: location of currentVm not found.");
+    	}
         int vmPointer = getDataInt16(a, vmLocation.vma_addr & 0xffff);
         return dj_vm_getRuntimeClass(a, vmPointer, chunkId);
     }
