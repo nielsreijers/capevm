@@ -1150,7 +1150,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
             buf.append("            methodImplId=\"" + method.MethodImplId + "\"\n\r");
             buf.append("            methodDefId=\"" + methodDefId + "\"\n\r");
             buf.append("            methodDefInfusion=\"" + methodDefInfusion + "\"\n\r");
-            buf.append("            startAddress=\"0x" + Integer.toHexString(method.StartAddress) + "\"\n\r");
+            buf.append("            branchTableAddress=\"0x" + Integer.toHexString(method.StartAddress) + "\"\n\r");
+            buf.append("            startAddress=\"0x" + Integer.toHexString(method.AvrInstructions.isEmpty() ? 0 : method.AvrInstructions.get(0).Address) + "\"\n\r");
             buf.append("            endAddress=\"0x" + Integer.toHexString(method.EndAddress) + "\"\n\r");
             buf.append("            branchCount=\"" + (method.BranchCount) + "\"\n\r");
             buf.append("            markloopCount=\"" + (method.MarkloopCount) + "\"\n\r");
