@@ -35,16 +35,21 @@
 volatile uint8_t avrora_profilemonitor;
 
 
-#define AVRORA_PROFILE_RESET_AND_START  		0x1
-#define AVRORA_PROFILE_STOP_COUNTING			0x2
+#define AVRORA_PROFILE_RESET                    0x1
+#define AVRORA_PROFILE_START_COUNTING           0x2
+#define AVRORA_PROFILE_STOP_COUNTING            0x3
 
 
-static AVRORA_PROFILER_INLINE void avroraProfilerResetAndStart()
+static AVRORA_PROFILER_INLINE void avroraProfilerReset()
 {
-	avrora_profilemonitor = AVRORA_PROFILE_RESET_AND_START;
+    avrora_profilemonitor = AVRORA_PROFILE_RESET;
+}
+static AVRORA_PROFILER_INLINE void avroraProfilerStartCounting()
+{
+    avrora_profilemonitor = AVRORA_PROFILE_START_COUNTING;
 }
 static AVRORA_PROFILER_INLINE void avroraProfilerStopCounting()
 {
-	avrora_profilemonitor = AVRORA_PROFILE_STOP_COUNTING;
+    avrora_profilemonitor = AVRORA_PROFILE_STOP_COUNTING;
 }
 #endif

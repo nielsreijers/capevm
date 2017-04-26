@@ -78,7 +78,7 @@ volatile int8_t ctimerWatch[2];
 
 #define AVRORA_DEFAULT_TIMER              1
 #define AVRORA_BENCH_NATIVE_TIMER       101
-#define AVRORA_BENCH_RTC_TIMER          102
+#define AVRORA_BENCH_AOT_TIMER          102
 #define AVRORA_BENCH_JAVA_TIMER         103
 #define AVRORA_GC_TIMER                 104
 #define AVRORA_REPROG_TIMER             105

@@ -100,7 +100,8 @@ public class ProfileMonitor extends MonitorFactory {
             program = s.getProgram();
 
             // Initialise the counter arrays
-            resetCountersAndStart();
+            resetCounters();
+            profilerActive = true;
             // and a stack to keep track of CALLs/RETs
             callstack = new Stack<CallStackRecord>();
 
@@ -129,15 +130,13 @@ public class ProfileMonitor extends MonitorFactory {
             }
         }
 
-        public void resetCountersAndStart() {
+        public void resetCounters() {
             // allocate a global array for the count of each instruction
             icount = new long[program.program_end];
             // allocate a global array for the cycles of each instruction
             itime = new long[program.program_end];
             // allocate a global array for the cycles consumed in a subroutine for each CALL instruction
             isubroutinetime = new long[program.program_end];
-            // start collecting data
-            profilerActive = true;
         }
 
         /**
@@ -161,13 +160,17 @@ public class ProfileMonitor extends MonitorFactory {
         }
 
         public class Watch extends Simulator.Watch.Empty {
-            final static int AVRORA_PROFILE_RESET_AND_START = 1;
-            final static int AVRORA_PROFILE_STOP_COUNTING   = 2;
+            final static int AVRORA_PROFILE_RESET                    = 0x1;
+            final static int AVRORA_PROFILE_START_COUNTING           = 0x2;
+            final static int AVRORA_PROFILE_STOP_COUNTING            = 0x3;
 
             public void fireBeforeWrite(State state, int data_addr, byte value) {
                 switch (value) {
-                    case AVRORA_PROFILE_RESET_AND_START:
-                        resetCountersAndStart();
+                    case AVRORA_PROFILE_RESET:
+                        resetCounters();
+                        break;
+                    case AVRORA_PROFILE_START_COUNTING:
+                        profilerActive = true;
                         break;
                     case AVRORA_PROFILE_STOP_COUNTING:
                         profilerActive = false;
