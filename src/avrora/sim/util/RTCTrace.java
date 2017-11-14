@@ -275,6 +275,14 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_LIGHTWEIGHTMETHODPARAMETER_A = 229; // These are just here to keep the range continuous. They're not actually used in the bytecode.
     final static int JVM_INVOKELIGHT = 230;
 
+    final static int JVM_SSHL_CONST = 231;
+    final static int JVM_SSHR_CONST = 232;
+    final static int JVM_SUSHR_CONST = 233;
+    final static int JVM_ISHL_CONST = 234;
+    final static int JVM_ISHR_CONST = 235;
+    final static int JVM_IUSHR_CONST = 236;
+
+
 
     final static LegacyDisassembler disasm = new LegacyDisassembler();
 
@@ -514,6 +522,13 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_LIGHTWEIGHTMETHODPARAMETER_I: return "JVM_LIGHTWEIGHTMETHODPARAMETER_I"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
             case JVM_LIGHTWEIGHTMETHODPARAMETER_A: return "JVM_LIGHTWEIGHTMETHODPARAMETER_A"; // These are just here to keep the range continuous. They're not actually used in the bytecode.
             case JVM_INVOKELIGHT:     referencedInfusionName=InfusionHeaderParser.getParser(currentInfusion).getReferencedInfusionName(opcode[1]); return     "JVM_INVOKELIGHT " + opcode[1] + "." + opcode[2] + "  " + referencedInfusionName + "." + urlencode(InfusionHeaderParser.getParser(referencedInfusionName).getMethodImpl_FullSignature(opcode[2]));
+            case JVM_SSHL_CONST: return "JVM_SSHL_CONST         " + opcode[1];
+            case JVM_SSHR_CONST: return "JVM_SSHR_CONST         " + opcode[1];
+            case JVM_SUSHR_CONST: return "JVM_SUSHR_CONST         " + opcode[1];
+            case JVM_ISHL_CONST: return "JVM_ISHL_CONST         " + opcode[1];
+            case JVM_ISHR_CONST: return "JVM_ISHR_CONST         " + opcode[1];
+            case JVM_IUSHR_CONST: return "JVM_IUSHR_CONST         " + opcode[1];
+
             default: return "UNKNOWN OPCODE " + opcode;
         }
     }
