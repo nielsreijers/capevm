@@ -37,11 +37,10 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int AVRORA_RTC_PRINTCURRENTAOTCALLSTACK  = 47;
     final static int AVRORA_RTC_STARTCOUNTINGCALLS        = 48;
     final static int AVRORA_RTC_STOPCOUNTINGCALLS         = 49;
-
     final static int AVRORA_RTC_BEEP                      = 50;
     final static int AVRORA_RTC_TERMINATEONEXCEPTION      = 51;
     final static int AVRORA_RTC_EMITPROLOGUE              = 52;
-
+    final static int AVRORA_RTC_SETMETHODIMPLADDRESS      = 53;
 
     final static int JVM_NOP = 0;
     final static int JVM_SCONST_M1 = 1;
@@ -584,6 +583,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
         public ArrayList<Short> StackCacheValueTags;
         public Integer StackCachePinnedRegisters;
         public Integer StackCacheSkipInstructionReason;
+        public Integer PreIntStackDepth;
+        public Integer PreRefStackDepth;
 
         public JavaInstruction() {
             this.UnoptimisedAvr = new ArrayList<AvrInstruction>();
@@ -592,6 +593,9 @@ public class RTCTrace extends Simulator.Watch.Empty {
     private class MethodImpl {
         public String Infusion;
         public int MethodImplId;
+        public int MethodImplAddress;
+        public int MaxIntStack;
+        public int MaxRefStack;
         public int StartAddress;
         public int EndAddress;
         public int JvmMethodSize;
@@ -707,6 +711,27 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     Terminal.print(buf.toString());
                 }
                 break;
+                case AVRORA_RTC_SETMETHODIMPLADDRESS: {
+                    // #define dj_di_methodImplementation_getReferenceArgumentCount(pointer) dj_di_getU8(pointer + 0)
+                    // #define dj_di_methodImplementation_getIntegerArgumentCount(pointer) dj_di_getU8(pointer + 1)
+                    // #define dj_di_methodImplementation_getReferenceLocalVariableCount(pointer) dj_di_getU8(pointer + 2)
+                    // #define dj_di_methodImplementation_getIntegerLocalVariableCount(pointer) dj_di_getU8(pointer + 3)
+                    // #define dj_di_methodImplementation_getParameterCount(pointer) dj_di_getU8(pointer + 4)
+                    // #define dj_di_methodImplementation_getMaxStack(pointer) dj_di_getU8(pointer + 5)
+                    // #define dj_di_methodImplementation_getMaxRefStack(pointer) dj_di_getU8(pointer + 6)
+                    // #define dj_di_methodImplementation_getFlags(pointer) dj_di_getU8(pointer + 7)
+                    // #define dj_di_methodImplementation_getReturnType(pointer) dj_di_getU8(pointer + 8)
+                    // #define dj_di_methodImplementation_getNumberOfBranchTargets(pointer) dj_di_getU16(pointer + 9)
+                    // #define dj_di_methodImplementation_getNumberOfOwnVariableSlots(pointer) dj_di_getU8(pointer + 11)
+                    // #define dj_di_methodImplementation_getNumberOfTotalVariableSlots(pointer) dj_di_getU8(pointer + 12)
+                    // #define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 13)
+                    // #define dj_di_methodImplementation_getData(pointer) (pointer + 15)
+                    currentMethod = methodImpls.get(methodImpls.size()-1);
+                    currentMethod.MethodImplAddress = getDataInt32(a, data_addr+1);
+                    currentMethod.MaxIntStack = getProgramInt8(a, currentMethod.MethodImplAddress+5);
+                    currentMethod.MaxRefStack = getProgramInt8(a, currentMethod.MethodImplAddress+6);
+                }
+                break;
                 case AVRORA_RTC_JAVAOPCODE: {
                     int[] opcode = new int[5];
                     opcode[0] = (getDataInt8(a, data_addr+1) & 0xff);
@@ -714,9 +739,13 @@ public class RTCTrace extends Simulator.Watch.Empty {
                     opcode[2] = (getDataInt8(a, data_addr+3) & 0xff);
                     opcode[3] = (getDataInt8(a, data_addr+4) & 0xff);
                     opcode[4] = (getDataInt8(a, data_addr+5) & 0xff);
+                    int preIntStackDepth = getDataInt8(a, data_addr+6);
+                    int preRefStackDepth = getDataInt8(a, data_addr+7);
 
                     JavaInstruction javaInstruction = new JavaInstruction();
                     javaInstruction.Text = opcode2string(opcode, this.currentInfusion);
+                    javaInstruction.PreIntStackDepth = preIntStackDepth;
+                    javaInstruction.PreRefStackDepth = preRefStackDepth;
                     currentMethod = methodImpls.get(methodImpls.size()-1);
                     updateCounters(currentMethod, opcode);
                     currentMethod.JavaInstructions.add(javaInstruction);
@@ -1153,14 +1182,15 @@ public class RTCTrace extends Simulator.Watch.Empty {
     public String toXmlString() {
         StringBuffer buf = new StringBuffer();
         buf.append("<methods>");
-
         for (MethodImpl method : methodImpls) {
             String methodDefId = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefId(method.MethodImplId);
             String methodDefInfusion = InfusionHeaderParser.getParser(method.Infusion).getMethodImpl_MethodDefInfusion(method.MethodImplId);
             String methodName = InfusionHeaderParser.getParser(methodDefInfusion).getMethodImpl_FullSignatureWithInfusion(method.MethodImplId);
             buf.append("    <methodImpl\n\r");
-            buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"");
-            buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\"");
+            buf.append("            maxIntStack=\"" + method.MaxIntStack + "\"\n\r");
+            buf.append("            maxRefStack=\"" + method.MaxRefStack + "\"\n\r");
+            buf.append("            jvmMethodSize=\"" + method.JvmMethodSize + "\"\n\r");
+            buf.append("            avrMethodSize=\"" + (method.EndAddress-method.StartAddress) + "\"\n\r");
             buf.append("            method=\"" + urlencode(methodName) + "\"\n\r");
             buf.append("            methodImplId=\"" + method.MethodImplId + "\"\n\r");
             buf.append("            methodDefId=\"" + methodDefId + "\"\n\r");
@@ -1175,7 +1205,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
             buf.append("        <javaInstructions>\n\r");
             int instructionIndex = 0;
             for (JavaInstruction javaInstruction : method.JavaInstructions) {
-                buf.append("            <javaInstruction index=\"" + instructionIndex++ + "\" text=\"" + javaInstruction.Text + "\">\n\r");
+                buf.append("            <javaInstruction preintstack=\"" + javaInstruction.PreIntStackDepth + "\" prerefstack=\"" + javaInstruction.PreRefStackDepth + "\" text=\"" + javaInstruction.Text + "\" index=\"" + instructionIndex++ + "\">\n\r");
                 buf.append("                <unoptimisedAvr>\n\r");
                 for (AvrInstruction avrInstruction : javaInstruction.UnoptimisedAvr) {
                     buf.append("                    " + AvrInstruction2XmlString(avrInstruction) + "\n\r");

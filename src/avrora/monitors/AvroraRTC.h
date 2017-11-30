@@ -31,10 +31,10 @@ volatile uint8_t rtcMonitorVariable[8];
 #define AVRORA_RTC_PRINTCURRENTAOTCALLSTACK  47
 #define AVRORA_RTC_STARTCOUNTINGCALLS        48
 #define AVRORA_RTC_STOPCOUNTINGCALLS         49
-
 #define AVRORA_RTC_BEEP                      50
 #define AVRORA_RTC_TERMINATEONEXCEPTION      51
 #define AVRORA_RTC_EMITPROLOGUE              52
+#define AVRORA_RTC_SETMETHODIMPLADDRESS      53
 
 static AVRORA_PRINT_INLINE void avroraRTCTraceSingleWordInstruction(uint16_t opcode)
 {
@@ -56,6 +56,12 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceStartMethod(uint8_t method_impl_id
 	rtcMonitorVariable[0] = AVRORA_RTC_STARTMETHOD;
 }
 
+static AVRORA_PRINT_INLINE void avroraRTCTraceSetMethodImplAddress(uint32_t address)
+{
+	*((uint32_t *)(rtcMonitorVariable+1)) = address;
+	rtcMonitorVariable[0] = AVRORA_RTC_SETMETHODIMPLADDRESS;
+}
+
 static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address, uint16_t jvmmethodsize, uint8_t numberofbranchtargets)
 {
 	*((uint32_t *)(rtcMonitorVariable+1)) = address;
@@ -64,13 +70,15 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address, uint16
 	rtcMonitorVariable[0] = AVRORA_RTC_ENDMETHOD;
 }
 
-static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmem(unsigned int pointer)
+static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmem(unsigned int pointer, uint8_t preIntStackDepth, uint8_t preRefStackDepth)
 {
 	rtcMonitorVariable[1] = pgm_read_byte_far(pointer + 0);
 	rtcMonitorVariable[2] = pgm_read_byte_far(pointer + 1);
 	rtcMonitorVariable[3] = pgm_read_byte_far(pointer + 2);
 	rtcMonitorVariable[4] = pgm_read_byte_far(pointer + 3);
 	rtcMonitorVariable[5] = pgm_read_byte_far(pointer + 4);
+	rtcMonitorVariable[6] = preIntStackDepth;
+	rtcMonitorVariable[7] = preRefStackDepth;
 	rtcMonitorVariable[0] = AVRORA_RTC_JAVAOPCODE;
 }
 
