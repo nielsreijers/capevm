@@ -70,7 +70,18 @@ static AVRORA_PRINT_INLINE void avroraRTCTraceEndMethod(uint32_t address, uint16
 	rtcMonitorVariable[0] = AVRORA_RTC_ENDMETHOD;
 }
 
-static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmem(unsigned int pointer, uint8_t preIntStackDepth, uint8_t preRefStackDepth)
+static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmem(unsigned int pointer)
+{
+	rtcMonitorVariable[1] = pgm_read_byte_far(pointer + 0);
+	rtcMonitorVariable[2] = pgm_read_byte_far(pointer + 1);
+	rtcMonitorVariable[3] = pgm_read_byte_far(pointer + 2);
+	rtcMonitorVariable[4] = pgm_read_byte_far(pointer + 3);
+	rtcMonitorVariable[5] = pgm_read_byte_far(pointer + 4);
+	rtcMonitorVariable[6] = 0;
+	rtcMonitorVariable[7] = 0;
+	rtcMonitorVariable[0] = AVRORA_RTC_JAVAOPCODE;
+}
+static AVRORA_PRINT_INLINE void avroraRTCTraceDarjeelingOpcodeInProgmemWithStackDepth(unsigned int pointer, uint8_t preIntStackDepth, uint8_t preRefStackDepth)
 {
 	rtcMonitorVariable[1] = pgm_read_byte_far(pointer + 0);
 	rtcMonitorVariable[2] = pgm_read_byte_far(pointer + 1);
