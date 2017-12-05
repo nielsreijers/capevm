@@ -263,6 +263,7 @@ public class ProfileMonitor extends MonitorFactory {
                         Terminal.println("R28:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R28),2) + " "); 
                         Terminal.println("R29:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R29),2) + " "); 
                         Terminal.println("R30:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R30),2) + " "); 
+                        Terminal.println("R31:" + StringUtil.toHex(((LegacyState)state).getRegisterByte(LegacyRegister.R31),2) + " "); 
 
                         System.exit(0);
                     }
