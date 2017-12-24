@@ -94,16 +94,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_ASTORE_1 = 49;
     final static int JVM_ASTORE_2 = 50;
     final static int JVM_ASTORE_3 = 51;
-    final static int JVM_BALOAD = 52;
-    final static int JVM_CALOAD = 53;
-    final static int JVM_SALOAD = 54;
-    final static int JVM_IALOAD = 55;
-    final static int JVM_AALOAD = 56;
-    final static int JVM_BASTORE = 57;
-    final static int JVM_CASTORE = 58;
-    final static int JVM_SASTORE = 59;
-    final static int JVM_IASTORE = 60;
-    final static int JVM_AASTORE = 61;
+    final static int JVM_GETARRAY_B = 52;
+    final static int JVM_GETARRAY_C = 53;
+    final static int JVM_GETARRAY_S = 54;
+    final static int JVM_GETARRAY_I = 55;
+    final static int JVM_GETARRAY_A = 56;
+    final static int JVM_PUTARRAY_B = 57;
+    final static int JVM_PUTARRAY_C = 58;
+    final static int JVM_PUTARRAY_S = 59;
+    final static int JVM_PUTARRAY_I = 60;
+    final static int JVM_PUTARRAY_A = 61;
     final static int JVM_IPOP = 62;
     final static int JVM_IPOP2 = 63;
     final static int JVM_IDUP = 64;
@@ -237,8 +237,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_LSTORE_1 = 192;
     final static int JVM_LSTORE_2 = 193;
     final static int JVM_LSTORE_3 = 194;
-    final static int JVM_LALOAD = 195;
-    final static int JVM_LASTORE = 196;
+    final static int JVM_GETARRAY_L = 195;
+    final static int JVM_PUTARRAY_L = 196;
     final static int JVM_GETFIELD_L = 197;
     final static int JVM_PUTFIELD_L = 198;
     final static int JVM_GETSTATIC_L = 199;
@@ -281,6 +281,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_ISHR_CONST = 235;
     final static int JVM_IUSHR_CONST = 236;
 
+    final static int JVM_START_AOT_MEASUREMENT = 237;
+    final static int JVM_STOP_AOT_MEASUREMENT = 238;
 
 
     final static LegacyDisassembler disasm = new LegacyDisassembler();
@@ -342,16 +344,16 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_ASTORE_1: return "JVM_ASTORE_1";
             case JVM_ASTORE_2: return "JVM_ASTORE_2";
             case JVM_ASTORE_3: return "JVM_ASTORE_3";
-            case JVM_BALOAD: return "JVM_BALOAD";
-            case JVM_CALOAD: return "JVM_CALOAD";
-            case JVM_SALOAD: return "JVM_SALOAD";
-            case JVM_IALOAD: return "JVM_IALOAD";
-            case JVM_AALOAD: return "JVM_AALOAD";
-            case JVM_BASTORE: return "JVM_BASTORE";
-            case JVM_CASTORE: return "JVM_CASTORE";
-            case JVM_SASTORE: return "JVM_SASTORE";
-            case JVM_IASTORE: return "JVM_IASTORE";
-            case JVM_AASTORE: return "JVM_AASTORE";
+            case JVM_GETARRAY_B: return "JVM_GETARRAY_B";
+            case JVM_GETARRAY_C: return "JVM_GETARRAY_C";
+            case JVM_GETARRAY_S: return "JVM_GETARRAY_S";
+            case JVM_GETARRAY_I: return "JVM_GETARRAY_I";
+            case JVM_GETARRAY_A: return "JVM_GETARRAY_A";
+            case JVM_PUTARRAY_B: return "JVM_PUTARRAY_B";
+            case JVM_PUTARRAY_C: return "JVM_PUTARRAY_C";
+            case JVM_PUTARRAY_S: return "JVM_PUTARRAY_S";
+            case JVM_PUTARRAY_I: return "JVM_PUTARRAY_I";
+            case JVM_PUTARRAY_A: return "JVM_PUTARRAY_A";
             case JVM_IPOP: return "JVM_IPOP";
             case JVM_IPOP2: return "JVM_IPOP2";
             case JVM_IDUP: return "JVM_IDUP";
@@ -485,8 +487,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_LSTORE_1: return "JVM_LSTORE_1";
             case JVM_LSTORE_2: return "JVM_LSTORE_2";
             case JVM_LSTORE_3: return "JVM_LSTORE_3";
-            case JVM_LALOAD: return "JVM_LALOAD";
-            case JVM_LASTORE: return "JVM_LASTORE";
+            case JVM_GETARRAY_L: return "JVM_GETARRAY_L";
+            case JVM_PUTARRAY_L: return "JVM_PUTARRAY_L";
             case JVM_GETFIELD_L: return "JVM_GETFIELD_L";
             case JVM_PUTFIELD_L: return "JVM_PUTFIELD_L";
             case JVM_GETSTATIC_L: return "JVM_GETSTATIC_L";
@@ -527,6 +529,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_ISHL_CONST: return "JVM_ISHL_CONST         " + opcode[1];
             case JVM_ISHR_CONST: return "JVM_ISHR_CONST         " + opcode[1];
             case JVM_IUSHR_CONST: return "JVM_IUSHR_CONST         " + opcode[1];
+            case JVM_START_AOT_MEASUREMENT: return "JVM_START_AOT_MEASUREMENT";
+            case JVM_STOP_AOT_MEASUREMENT: return "JVM_STOP_AOT_MEASUREMENT";
 
             default: return "UNKNOWN OPCODE " + opcode;
         }
