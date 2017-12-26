@@ -294,7 +294,7 @@ public class ProfileMonitor extends MonitorFactory {
                 if (inst instanceof LegacyInstr.RET) {
                     CallStackRecord r = callstack.pop();
                     if (profilerActive) {
-                        isubroutinetime[r.sourcePC] += state.getCycles() - r.time;
+                        isubroutinetime[r.sourcePC] += (state.getCycles() - r.time - 4); // -4 because the start time is the start time of the CALL instruction, which shouldn't be included in the isubroutinetime since it's already counted in itime.
                     }
                     expectedNextPc = r.returnAddress;
                     returnInstructionPc = pc;
