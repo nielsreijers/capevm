@@ -615,7 +615,7 @@ public class RTCTrace extends Simulator.Watch.Empty {
             this.AvrInstructions = new ArrayList<AvrInstruction>();
             this.BranchTargets = new ArrayList<Integer>();
             this.JavaInstructions.add(new JavaInstruction());
-            this.JavaInstructions.get(0).Text = "Method preamble";
+            this.JavaInstructions.get(0).Text = "MethodPreamble";
             this.BranchCount = 0;
             this.MarkloopCount = 0;
             this.MarkloopTotalSize = 0;
