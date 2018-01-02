@@ -281,8 +281,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_ISHR_CONST = 235;
     final static int JVM_IUSHR_CONST = 236;
 
-    final static int JVM_START_AOT_MEASUREMENT = 237;
-    final static int JVM_STOP_AOT_MEASUREMENT = 238;
+    final static int JVM_START_AOT_BM = 237;
+    final static int JVM_STOP_AOT_BM = 238;
 
 
     final static LegacyDisassembler disasm = new LegacyDisassembler();
@@ -529,8 +529,8 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_ISHL_CONST: return "JVM_ISHL_CONST         " + opcode[1];
             case JVM_ISHR_CONST: return "JVM_ISHR_CONST         " + opcode[1];
             case JVM_IUSHR_CONST: return "JVM_IUSHR_CONST         " + opcode[1];
-            case JVM_START_AOT_MEASUREMENT: return "JVM_START_AOT_MEASUREMENT";
-            case JVM_STOP_AOT_MEASUREMENT: return "JVM_STOP_AOT_MEASUREMENT";
+            case JVM_START_AOT_BM: return "JVM_START_AOT_BM";
+            case JVM_STOP_AOT_BM: return "JVM_STOP_AOT_BM";
 
             default: return "UNKNOWN OPCODE " + opcode;
         }
