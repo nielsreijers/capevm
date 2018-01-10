@@ -72,6 +72,7 @@ public class MemPrint extends Simulator.Watch.Empty {
     final byte AVRORA_PRINT_PANIC                      = 0x10;
     final byte AVRORA_PRINT_FREEHEAPMEMORY             = 0x11;
     final byte AVRORA_PRINT_PC                         = 0x12;
+    final byte AVRORA_PRINT_DJ_HEAP                    = 0x13;
 
     public MemPrint(int b, int m, String l) {
         base = b;
@@ -317,6 +318,9 @@ public class MemPrint extends Simulator.Watch.Empty {
                     String line = "HEAP: left_pointer 0x" + StringUtil.toHex(left_pointer, 4) + " right_pointer 0x" + StringUtil.toHex(right_pointer, 4) + " free: " + free + "\n";
                     fil.append(line);
                     buf.append(line);
+                break;
+                case AVRORA_PRINT_DJ_HEAP:
+                    printDarjeelingHeap(state);
                 break;
                 default:
                     fil.append("beep:" + value); buf.append("beep:" + value);
