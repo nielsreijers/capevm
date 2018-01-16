@@ -444,7 +444,10 @@ public class ProfileMonitor extends MonitorFactory {
             // report the profile for each instruction in the program
             for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
                 sb_single.append(String.format("    <Instruction address=\"%s\" executions=\"%d\" cycles=\"%d\" cyclesSubroutine=\"%d\"/>\n",
-                    StringUtil.addrToString(cntr), icount[cntr], itime[cntr], isubroutinetime[cntr]));
+                    StringUtil.addrToString(cntr),
+                    icount[cntr],
+                    itime[cntr],
+                    isubroutinetime[cntr] > 0x7FFFFFFFL ? 0 : isubroutinetime[cntr]));
             }
 
             // for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
