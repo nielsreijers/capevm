@@ -284,6 +284,11 @@ public class RTCTrace extends Simulator.Watch.Empty {
     final static int JVM_START_AOT_BM = 237;
     final static int JVM_STOP_AOT_BM = 238;
 
+    final static int JVM_GETCONSTARRAY_B = 239;
+    final static int JVM_GETCONSTARRAY_C = 240;
+    final static int JVM_GETCONSTARRAY_S = 241;
+    final static int JVM_GETCONSTARRAY_I = 242;
+
 
     final static LegacyDisassembler disasm = new LegacyDisassembler();
 
@@ -531,6 +536,10 @@ public class RTCTrace extends Simulator.Watch.Empty {
             case JVM_IUSHR_CONST: return "JVM_IUSHR_CONST         " + opcode[1];
             case JVM_START_AOT_BM: return "JVM_START_AOT_BM";
             case JVM_STOP_AOT_BM: return "JVM_STOP_AOT_BM";
+            case JVM_GETCONSTARRAY_B: return "JVM_GETCONSTARRAY_B " + opcode[1];
+            case JVM_GETCONSTARRAY_C: return "JVM_GETCONSTARRAY_C " + opcode[1];
+            case JVM_GETCONSTARRAY_S: return "JVM_GETCONSTARRAY_S " + opcode[1];
+            case JVM_GETCONSTARRAY_I: return "JVM_GETCONSTARRAY_I " + opcode[1];
 
             default: return "UNKNOWN OPCODE " + opcode;
         }

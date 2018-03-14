@@ -68,7 +68,7 @@ public class StukjeDarjeeling {
 		// 	while (infusion!=NULL) {
 			while (infusionPointer != 0) {
 		// 		base = infusion->class_base;
-				base = getDataInt16(a, infusionPointer+10); // ->class_base : skip 10 bytes
+				base = getDataInt16(a, infusionPointer+12); // ->class_base : skip 12 bytes
 		// 		if ((id>=base)&&(id<base + dj_di_parentElement_getListSize(infusion->classList))) {
 				int infusionClassListPointer = getDataInt16(a, infusionPointer+2); // ->classList : skip 2 bytes
 			// System.out.println("infusion pointer " + infusionPointer + " base " + base);
@@ -80,7 +80,7 @@ public class StukjeDarjeeling {
 		// 		}
 				}
 		// 		infusion = infusion->next;
-				infusionPointer = getDataInt16(a, infusionPointer+14); // ->next : skip 14 bytes
+				infusionPointer = getDataInt16(a, infusionPointer+16); // ->next : skip 16 bytes
 		// 	}
 			}
 
