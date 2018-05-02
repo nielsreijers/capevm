@@ -27,11 +27,11 @@
 #include <stdint.h>
 #include "types.h"
 #include "djtimer.h"
-#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTrace.h"
-#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraPrint.h"
-#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTimer.h"
-#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraRTC.h"
-#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraProfiler.h"
+#include "/Users/nielsreijers/src/rtc/avrora/src/avrora/monitors/AvroraTrace.h"
+#include "/Users/nielsreijers/src/rtc/avrora/src/avrora/monitors/AvroraPrint.h"
+#include "/Users/nielsreijers/src/rtc/avrora/src/avrora/monitors/AvroraTimer.h"
+#include "/Users/nielsreijers/src/rtc/avrora/src/avrora/monitors/AvroraRTC.h"
+#include "/Users/nielsreijers/src/rtc/avrora/src/avrora/monitors/AvroraProfiler.h"
 
 void javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 void javax_rtc_RTC_void_startBenchmarkMeasurement_AOT();

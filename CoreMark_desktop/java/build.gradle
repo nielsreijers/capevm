@@ -4,7 +4,7 @@ apply plugin: 'java'
 
 buildscript {
     repositories {
-        flatDir dirs: '/Users/nielsreijers/src/proguard5.2.1/lib'
+        flatDir dirs: '/Users/nielsreijers/src/rtc/proguard5.2.1/lib'
     }
     dependencies {
         classpath ':proguard:'

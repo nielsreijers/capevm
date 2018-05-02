@@ -48,4 +48,4 @@ src/config/coremk_c/results_*
 src/config/motetrack_c/results_*
 process-output.userprefs
 src/config/avrora/thesis_results\.zip
-avrora/avrora-beta-1.7.117.jar
+avrora/jars/avrora-beta-1.7.117.jar
