@@ -268,11 +268,11 @@ module CombineResults =
         let allResults =
             resultsXmlStrings
                 |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))
-                |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "xxtea"; "md5"; "rc5"; "fft8"; "fft16"; "outlier16o"; "outlier32o"; "outlier16u"; "outlier32u"; "lec"; "coremk"; "coremk_or0"; "coremk_or1"; "coremk_or2"; "coremk_or3"; "coremk_or4"; "coremk_or5"; "coremk_ch1"; "coremk_ch2"; "coremk_lw"; "coremk_fn"; "motetrack"; "heat_calib"; "heat_detect"; "fillarray8"; "fillarray16"; "fillarray32"] in
+                |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort16_base"; "bsort32"; "hsort16"; "hsort16_base"; "hsort32"; "binsrch16"; "binsrch16_base"; "binsrch32"; "xxtea"; "xxtea_base"; "md5"; "md5_base"; "rc5"; "rc5_base"; "fft8"; "fft16"; "fft16_base"; "outlier16o"; "outlier32o"; "outlier16u"; "outlier16u_base"; "outlier32u"; "lec"; "lec_base"; "coremk"; "coremk_base"; "coremk_or0"; "coremk_or1"; "coremk_or2"; "coremk_or3"; "coremk_or4"; "coremk_or5"; "coremk_ch1"; "coremk_ch2"; "coremk_lw"; "coremk_fn"; "motetrack"; "motetrack_base"; "heat_calib"; "heat_calib_base"; "heat_detect"; "heat_detect_base"; "fillarray8"; "fillarray16"; "fillarray32"] in
                                          match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                          | Some (index) -> index
                                          | None -> 100)
-        let mainBenchmarks = ["bsort16"; "hsort16"; "binsrch16"; "xxtea"; "md5"; "rc5"; "coremk"; "coremk_ch2"; "motetrack"; "heat_calib"; "heat_detect"; "lec"; "fft16"; "outlier16u"]
+        let mainBenchmarks = ["bsort16"; "hsort16"; "binsrch16"; "xxtea"; "md5"; "rc5"; "coremk"; "coremk_ch2"; "motetrack"; "heat_calib"; "heat_detect"; "lec"; "fft16"; "outlier16u"; "bsort16_base"; "hsort16_base"; "binsrch16_base"; "xxtea_base"; "md5_base"; "rc5_base"; "fft16_base"; "outlier16u_base"; "lec_base"; "coremk_base"; "motetrack_base"; "heat_calib_base"; "heat_detect_base"]
         let mainResults =
             allResults
                 |> List.filter (fun r -> mainBenchmarks |> List.exists ((=) r.benchmark))

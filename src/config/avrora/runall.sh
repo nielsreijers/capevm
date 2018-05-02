@@ -31,7 +31,7 @@ cp -r ../motetrack_c/results_motetrack_c .
 
 
 ##### Main benchmarks
-benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_calib heat_detect lec fft16 outlier16u)
+benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk motetrack heat_calib heat_detect lec fft16 outlier16u)
 
 
 
@@ -49,11 +49,12 @@ benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_ca
 
 
 
-# ##### MAIN GRAPHS
+# ##### MAIN GRAPHS LIGHTWEIGHT FIRST
 # for benchmark in ${benchmarks}
 # do
 #     # Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
-#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
@@ -65,7 +66,27 @@ benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_ca
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 # done
-# store_as_resultset resultsets_maingraphs
+# store_as_resultset resultsets_maingraphs_lw_first
+
+
+##### MAIN GRAPHS LIGHTWEIGHT LAST
+for benchmark in ${benchmarks}
+do
+    # Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true
+done
+store_as_resultset resultsets_maingraphs_lw_last
 
 
 
@@ -209,25 +230,25 @@ benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_ca
 # done
 # store_as_resultset resultsets_sensys
 
-##### Main graphs with unoptimised source and lightweight methods
-for benchmark in ${benchmarks}
-do
-    # # GET/PUTFIELD_A_FIXED are turned on for these.
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+# ##### Main graphs with unoptimised source and lightweight methods
+# for benchmark in ${benchmarks}
+# do
+#     # # GET/PUTFIELD_A_FIXED are turned on for these.
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
 
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
 
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true -Psafe
-done
-store_as_resultset resultsets_maingraphs_unoptimised_source_lw
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true -Psafe
+# done
+# store_as_resultset resultsets_maingraphs_unoptimised_source_lw
 
 
 
