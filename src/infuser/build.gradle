@@ -7,17 +7,13 @@ repositories {
 }
 
 dependencies {
-	compile "org.apache.ant:ant:1.9.2@jar"
-	compile "org.apache.bcel:bcel:6.0@jar"
-	runtime "org.apache.ant:ant:1.9.2@jar"
-	runtime "org.apache.bcel:bcel:6.0@jar"
+	implementation "org.apache.ant:ant:1.9.2@jar"
+	implementation "org.apache.bcel:bcel:6.0@jar"
 }
 
 version = 1.0
 
-
 jar {
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes 'Main-Class': 'org.csiro.darjeeling.infuser.InfuserCommandLine'
     }
