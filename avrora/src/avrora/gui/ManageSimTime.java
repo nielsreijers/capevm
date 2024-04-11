@@ -124,13 +124,13 @@ public class ManageSimTime {
         simTimeCycleDefaults[5] = 0;
 
         Hashtable<Integer, JLabel> temptable = new Hashtable<Integer, JLabel>();
-        temptable.put(new Integer(-1), new JLabel("Custom"));
-        temptable.put(new Integer(0), new JLabel("Full Speed"));
-        temptable.put(new Integer(1), new JLabel("Real Time"));
-        temptable.put(new Integer(2), new JLabel("Slow"));
-        temptable.put(new Integer(3), new JLabel("Slower"));
-        temptable.put(new Integer(4), new JLabel("Slowest"));
-        temptable.put(new Integer(5), new JLabel("Single Step"));
+        temptable.put(Integer.valueOf(-1), new JLabel("Custom"));
+        temptable.put(Integer.valueOf(0), new JLabel("Full Speed"));
+        temptable.put(Integer.valueOf(1), new JLabel("Real Time"));
+        temptable.put(Integer.valueOf(2), new JLabel("Slow"));
+        temptable.put(Integer.valueOf(3), new JLabel("Slower"));
+        temptable.put(Integer.valueOf(4), new JLabel("Slowest"));
+        temptable.put(Integer.valueOf(5), new JLabel("Single Step"));
 
         //Init the slider
         thesetup.simTimeSlider = new JSlider(-1, 5, 0);
@@ -145,16 +145,16 @@ public class ManageSimTime {
 
         //Delay spinner
         thesetup.simTimeDelaySpinner = new SpinnerNumberModel();
-        thesetup.simTimeDelaySpinner.setValue(new Integer(0));
-        thesetup.simTimeDelaySpinner.setMinimum(new Integer(0));
-        thesetup.simTimeDelaySpinner.setStepSize(new Integer(1));
+        thesetup.simTimeDelaySpinner.setValue(Integer.valueOf(0));
+        thesetup.simTimeDelaySpinner.setMinimum(Integer.valueOf(0));
+        thesetup.simTimeDelaySpinner.setStepSize(Integer.valueOf(1));
         thesetup.simTimeDelaySpinner.addChangeListener(AvroraGui.instance);
 
         //Cycle/Instruction spinner
         thesetup.simTimeCycleSpinner = new SpinnerNumberModel();
-        thesetup.simTimeCycleSpinner.setValue(new Integer(0));
-        thesetup.simTimeCycleSpinner.setMinimum(new Integer(0));
-        thesetup.simTimeCycleSpinner.setStepSize(new Integer(1));
+        thesetup.simTimeCycleSpinner.setValue(Integer.valueOf(0));
+        thesetup.simTimeCycleSpinner.setMinimum(Integer.valueOf(0));
+        thesetup.simTimeCycleSpinner.setStepSize(Integer.valueOf(1));
         thesetup.simTimeCycleSpinner.addChangeListener(AvroraGui.instance);
 
         //Cycle/Instruction selector
@@ -333,8 +333,8 @@ public class ManageSimTime {
         if (simTimeSlider.getValue() >= 0) //so it's not custom
         {
             int sliderValue = simTimeSlider.getValue();
-            simTimeDelaySpinner.setValue(new Integer(simTimeDelayDefaults[sliderValue]));
-            simTimeCycleSpinner.setValue(new Integer(simTimeCycleDefaults[sliderValue]));
+            simTimeDelaySpinner.setValue(Integer.valueOf(simTimeDelayDefaults[sliderValue]));
+            simTimeCycleSpinner.setValue(Integer.valueOf(simTimeCycleDefaults[sliderValue]));
             simTimeSlider.setValue(sliderValue); //to a looping change
             updateSimChangeSpeedValues();
         } else {

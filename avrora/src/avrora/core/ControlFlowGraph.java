@@ -288,7 +288,7 @@ public class ControlFlowGraph {
      */
     public Block newBlock(int address) {
         Block b = new Block(address);
-        blocks.put(new Integer(address), b);
+        blocks.put(Integer.valueOf(address), b);
         return b;
     }
 
@@ -328,7 +328,7 @@ public class ControlFlowGraph {
      *         block exists; null otherwise
      */
     public Block getBlockStartingAt(int address) {
-        return blocks.get(new Integer(address));
+        return blocks.get(Integer.valueOf(address));
     }
 
     /**

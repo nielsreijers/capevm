@@ -35,6 +35,8 @@ gid.db
 fbp.html
 wukong/tools/testrtt/testrtt
 .gradle
+.metals
+.vscode
 bin
 obj
 src/config/avrora/results_*

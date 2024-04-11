@@ -10,7 +10,7 @@ import cck.parser.SimpleCharStream;
 
 public class AtmelParser extends AbstractParser implements AtmelParserConstants {
 
-    public AtmelParser(InputStream stream, Module m, String fname) {
+    public AtmelParser(InputStream stream, avrora.syntax.Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;

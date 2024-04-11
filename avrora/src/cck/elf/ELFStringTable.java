@@ -93,7 +93,7 @@ public class ELFStringTable {
      */
     public String getString(int ind) {
         if ( ind >= data.length ) return "";
-        String str = (String)map.get(new Integer(ind));
+        String str = (String)map.get(Integer.valueOf(ind));
         if ( str == null ) {
             StringBuffer buf = new StringBuffer();
             for ( int pos = ind; pos < data.length; pos++ ) {
@@ -102,7 +102,7 @@ public class ELFStringTable {
                 buf.append((char)b);
             }
             str = buf.toString();
-            map.put(new Integer(ind), str);
+            map.put(Integer.valueOf(ind), str);
         }
         return str;
     }

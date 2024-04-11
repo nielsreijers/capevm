@@ -181,7 +181,7 @@ public class ISEInterpreter implements LegacyInstrVisitor {
     }
 
     private ISEState mergeState(int pc, ISEState s) {
-        ISEState es = (ISEState)states.get(new Integer(pc));
+        ISEState es = (ISEState)states.get(Integer.valueOf(pc));
         if ( es != null ) {
             if ( es.equals(s) ) {
                 printSeen();
@@ -193,7 +193,7 @@ public class ISEInterpreter implements LegacyInstrVisitor {
                 printState(s, pc);
             }
         } else {
-            states.put(new Integer(pc), s);
+            states.put(Integer.valueOf(pc), s);
         }
         return s;
     }

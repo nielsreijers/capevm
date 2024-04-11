@@ -132,7 +132,7 @@ public class EnergyProfiler extends MonitorFactory {
                 size = block.getSize();
                 address = block.getAddress();
                 if (size > 0 && program.readInstr(address) != null) {
-                    labelLookup.put(new Integer(address), nearestLabel(address));
+                    labelLookup.put(Integer.valueOf(address), nearestLabel(address));
                     s.insertProbe(procedureProbe, address);
                 }
             }
@@ -238,7 +238,7 @@ public class EnergyProfiler extends MonitorFactory {
                     }
                 }
                 lastChange = simulator.getState().getCycles();
-                currentMode = (EnergyProfile)labelLookup.get(new Integer(pc));
+                currentMode = (EnergyProfile)labelLookup.get(Integer.valueOf(pc));
             }
 
         }

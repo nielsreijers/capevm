@@ -162,7 +162,7 @@ public class SourceMapping {
      * @return a string representation of the address as a label or a hexadecimal string
      */
     public String getName(int address) {
-        String s = reverseMap.get(new Integer(address));
+        String s = reverseMap.get(Integer.valueOf(address));
         return s == null ? StringUtil.addrToString(address) : s;
     }
 
@@ -215,7 +215,7 @@ public class SourceMapping {
     public void newLocation(String section, String name, int vma_addr, int lma_addr, int size) {
         Location l = new Location(section, name, vma_addr, lma_addr, size);
         labels.put(name, l);
-        reverseMap.put(new Integer(lma_addr), name);
+        reverseMap.put(Integer.valueOf(lma_addr), name);
     }
 
     /**

@@ -72,7 +72,7 @@ public class TreeFactorer {
             int value = e.getKey();
             DTNode child = e.getValue();
             DTNode nchild = rebuild(nstate, child);
-            nc.put(new Integer(value), nchild);
+            nc.put(Integer.valueOf(value), nchild);
         }
 
         DTNode nn = n.shallowCopy(nc);

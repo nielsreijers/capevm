@@ -237,7 +237,7 @@ public class DTBuilder {
             // if the tree is not complete, add a default branch
             if ( set.children.size() < 1 << (set.right_bit - set.left_bit + 1) ) {
                 EncodingSet def = new EncodingSet();
-                set.children.put(new Integer(-1), def);
+                set.children.put(Integer.valueOf(-1), def);
                 for ( EncodingInst ei : unmatched ) {
                     def.addEncoding(ei.copy());
                 }
@@ -247,7 +247,7 @@ public class DTBuilder {
 
     private void createChild(EncodingSet set, EncodingInst ei) {
         // get the value of the bits and add to corresponding subtree
-        Integer iv = new Integer(extractValue(set, ei));
+        Integer iv = Integer.valueOf(extractValue(set, ei));
         EncodingSet c = set.children.get(iv);
         if ( c == null ) {
             c = new EncodingSet();

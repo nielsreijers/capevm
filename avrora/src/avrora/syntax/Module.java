@@ -321,7 +321,7 @@ public class Module implements Context {
     }
 
     public void addVariable(String name, int value) {
-        constants.put(labelName(name), new Integer(value));
+        constants.put(labelName(name), Integer.valueOf(value));
     }
 
     public void addRegisterName(String name, AbstractToken reg) {
@@ -505,11 +505,11 @@ public class Module implements Context {
     }
 
     private void constant(String name, int value) {
-        constants.put(name.toLowerCase(), new Integer(value));
+        constants.put(name.toLowerCase(), Integer.valueOf(value));
     }
 
     private void ioreg(String name, int offset) {
-        constants.put(name.toLowerCase(), new Integer(offset));
+        constants.put(name.toLowerCase(), Integer.valueOf(offset));
     }
 
 }

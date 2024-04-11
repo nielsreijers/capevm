@@ -125,10 +125,6 @@ public class AVRInterpreter extends AVRInstrInterpreter {
      * represent the SRAM, flash, interrupt table, IO registers, etc.
      */
     public AVRInterpreter(Simulator simulator, Program p, AVRProperties pr) {
-        // this class and its methods are performance critical
-        // observed speedup with this call on Hotspot
-        Compiler.compileClass(this.getClass());
-
         // set up the reference to the simulator
         this.simulator = simulator;
 

@@ -37,6 +37,7 @@ import cck.text.Terminal;
 import cck.util.*;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -191,7 +192,21 @@ public class TestEngine {
                     WorkThread thread = threads[cntr];
                     if ( thread.intest && (now - thread.test_began) > MAXIMUM_TEST_MS) {
                         thread.interrupt();
-                        thread.stop(new NonTermination(now - thread.test_began));
+
+                        // thread.stop(new NonTermination(now - thread.test_began));
+                        // The .stop method was removed in Java 11 for good reasons.
+                        // But seeing how this is a unittest, and I don't want to spend too much time on this
+                        // I think we can use this quick-and-dirty workaround for now.
+                        try {
+                            Method stopMethod = Thread.class.getDeclaredMethod("stop", Throwable.class);
+                            stopMethod.setAccessible(true);
+                            // Call the deprecated Thread.stop(Throwable) method to forcefully stop the thread
+                            stopMethod.invoke(thread, new NonTermination(now - thread.test_began));    
+                            // Wait for the thread to terminate
+                            thread.join();
+                        } catch (Exception e) {
+                            Terminal.printRed("Exception trying to kill long running test thread: " + e.getMessage());
+                        }
                     }
                 }
                 synchronized(this) {

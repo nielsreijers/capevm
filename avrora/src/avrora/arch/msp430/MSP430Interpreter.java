@@ -80,9 +80,6 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
      */
     public MSP430Interpreter(Simulator simulator, Program p, MSP430Properties pr) {
         super(simulator);
-        // this class and its methods are performance critical
-        // observed speedup with this call on Hotspot
-        Compiler.compileClass(this.getClass());
 
         // if program will not fit onto hardware, error
         if (p.program_end > MSP430DataSegment.DATA_SIZE)

@@ -190,9 +190,9 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
     private void makeZoomLevelOption() {
         stepsizeVisual = new SpinnerNumberModel();
-        stepsizeVisual.setValue(new Integer(timeScale.getZoom()+1));
-        stepsizeVisual.setMinimum(new Integer(1));
-        stepsizeVisual.setMaximum(new Integer(timeScale.getMaxZoom()+1));
+        stepsizeVisual.setValue(Integer.valueOf(timeScale.getZoom()+1));
+        stepsizeVisual.setMinimum(Integer.valueOf(1));
+        stepsizeVisual.setMaximum(Integer.valueOf(timeScale.getMaxZoom()+1));
         stepsizeVisual.addChangeListener(this);
     }
 
@@ -218,8 +218,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
     private void createmaxvalueVisual() {
         maxvalueVisual = new SpinnerNumberModel();
-        maxvalueVisual.setValue(new Integer(maxvalue));
-        stepsizeVisual.setMinimum(new Integer(1));
+        maxvalueVisual.setValue(Integer.valueOf(maxvalue));
+        stepsizeVisual.setMinimum(Integer.valueOf(1));
         maxvalueVisual.addChangeListener(this);
     }
 

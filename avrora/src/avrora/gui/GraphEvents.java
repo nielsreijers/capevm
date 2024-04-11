@@ -235,8 +235,8 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
 
     private void createstepsizeVisual() {
         stepsizeVisual = new SpinnerNumberModel();
-        stepsizeVisual.setValue(new Double(stepsize));
-        stepsizeVisual.setMinimum(new Double(0));
+        stepsizeVisual.setValue(Double.valueOf(stepsize));
+        stepsizeVisual.setMinimum(Double.valueOf(0));
         stepsizeVisual.addChangeListener(this);
     }
 

@@ -96,7 +96,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
         private Expr lookupMap_fast(String name, int index) {
             HashMap<Integer, Expr> map = mapMap.get(name);
             if (map != null) {
-                Expr e = map.get(new Integer(index));
+                Expr e = map.get(Integer.valueOf(index));
                 if (e != null) return e;
             }
 
@@ -116,7 +116,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
                 mapMap.put(mapname, map);
             }
 
-            map.put(new Integer(index), e);
+            map.put(Integer.valueOf(index), e);
 
         }
 
@@ -125,7 +125,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
 
             HashMap<Integer, Expr> map = mapMap.get(mapname);
             if (map != null) {
-                mapMap.remove(new Integer(index));
+                mapMap.remove(Integer.valueOf(index));
             }
 
             if (parent != null) parent.removeMap(mapname, index);

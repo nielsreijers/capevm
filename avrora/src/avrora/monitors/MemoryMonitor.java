@@ -116,7 +116,7 @@ public class MemoryMonitor extends MonitorFactory {
                             cck.util.Util.userError("Memory address not in ram", val);
                         }
                         if (memaddr != -1) {
-                            locset.add(new Integer(memaddr));
+                            locset.add(Integer.valueOf(memaddr));
                         }
                     }
                     else {
@@ -126,7 +126,7 @@ public class MemoryMonitor extends MonitorFactory {
                             Util.userError("Label unknown", val);
                         int addr = loc.vma_addr & 0xffff;
                         for (int i = 0; i < loc.size; i++)
-                            locset.add(new Integer(addr+i));
+                            locset.add(Integer.valueOf(addr+i));
                     }
                 }
                 // insert watches

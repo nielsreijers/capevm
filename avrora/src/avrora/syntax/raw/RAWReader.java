@@ -187,7 +187,7 @@ public class RAWReader extends ProgramReader {
 
     private void readByte(Record record, CharacterIterator i) {
         int readByte = StringUtil.readHexValue(i, 2);
-        record.bytes.add(new Byte((byte)readByte));
+        record.bytes.add(Byte.valueOf((byte)readByte));
         if (StringUtil.isHexDigit(i.current())) Util.userError("constant too long");
     }
 

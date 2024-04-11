@@ -95,7 +95,7 @@ public class SnifferMonitor extends MonitorFactory {
         public void fireBeforeTransmit(Medium.Transmitter t, byte val) {
             if (showTransmitted){
                 if (bytes.size() == 0) startCycle = simulator.getClock().getCount();
-                bytes.addLast(new Character((char)(0xff & val)));
+                bytes.addLast(Character.valueOf((char)(0xff & val)));
                 bytesTransmitted++;
             }
         }
@@ -116,7 +116,7 @@ public class SnifferMonitor extends MonitorFactory {
             if (showReceived){
                 if (bytes.size() == 0) startCycle = simulator.getClock().getCount();
                 if (Medium.isCorruptedByte(val)) bytesCorrupted++;
-                bytes.addLast(new Character(val));
+                bytes.addLast(Character.valueOf(val));
                 bytesReceived++;
             }
         }

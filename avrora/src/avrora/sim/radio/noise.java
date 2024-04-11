@@ -40,7 +40,7 @@ public class noise {
 
     /** Creates a new instance of Noise when there isn't noise file */
     public noise() {
-        noise.add(new Integer(-95));
+        noise.add(Integer.valueOf(-95));
     }
 
     private void parse(BufferedReader f) throws IOException {
@@ -74,7 +74,7 @@ public class noise {
             }
             if (count == 1) {
                 //parsing of this line went well -> found 1 token
-                noise.add(new Integer(noise_value));
+                noise.add(Integer.valueOf(noise_value));
             }
         }
     }

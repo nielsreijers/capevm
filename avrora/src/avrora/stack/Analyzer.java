@@ -481,7 +481,7 @@ public class Analyzer {
      */
     protected Path findMaximalPath(StateCache.State s, HashMap<State, Integer> stack, int depth) throws UnboundedStackException {
         // record this node and the stack depth at which we first encounter it
-        stack.put(s, new Integer(depth));
+        stack.put(s, Integer.valueOf(depth));
 
         int maxdepth = 0;
         int minlength = Integer.MAX_VALUE;

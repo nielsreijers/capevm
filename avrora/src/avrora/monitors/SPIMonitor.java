@@ -90,7 +90,7 @@ public class SPIMonitor extends MonitorFactory {
          * @param s Simulator
          */
         Monitor(Simulator s) {
-            Connection conn = (Connection)portMap.get(new Integer(s.getID()));
+            Connection conn = (Connection)portMap.get(Integer.valueOf(s.getID()));
             if ( conn != null ) {
                 AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
                 SPI spi = (SPI)mcu.getDevice("spi");
@@ -129,7 +129,7 @@ public class SPIMonitor extends MonitorFactory {
             int port = Integer.parseInt(str[1]);
             SocketConnection conn = new SocketConnection();
             conn.port = port;
-            portMap.put(new Integer(nid), conn);
+            portMap.put(Integer.valueOf(nid), conn);
         }
     }
 

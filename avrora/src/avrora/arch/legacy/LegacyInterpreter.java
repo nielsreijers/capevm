@@ -72,10 +72,6 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
      */
     protected LegacyInterpreter(Simulator s, Program p, AVRProperties pr) {
         super(s, p, pr);
-
-        // this class and its methods are performance critical
-        // observed speedup with this call on Hotspot
-        Compiler.compileClass(getClass());
     }
 
     protected void runLoop() {

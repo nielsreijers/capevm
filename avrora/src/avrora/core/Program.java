@@ -251,7 +251,7 @@ public class Program {
      *         call or branch instruction
      */
     public List<Integer> getIndirectEdges(int callsite) {
-        return indirectEdges.get(new Integer(callsite));
+        return indirectEdges.get(Integer.valueOf(callsite));
     }
 
     /**
@@ -263,8 +263,8 @@ public class Program {
      * @param target   the possible target of the call or branch instruction
      */
     public void addIndirectEdge(int callsite, int target) {
-        Integer c = new Integer(callsite);
-        Integer t = new Integer(target);
+        Integer c = Integer.valueOf(callsite);
+        Integer t = Integer.valueOf(target);
 
         List<Integer> l = indirectEdges.get(c);
 

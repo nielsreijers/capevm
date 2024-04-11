@@ -610,7 +610,7 @@ public class GDBServer extends MonitorFactory {
         // check if it is a single number
         try {
             Integer port = Integer.valueOf(PORTS.stringValue());
-            portMap.put(new Integer(0), port);
+            portMap.put(Integer.valueOf(0), port);
             return;
         }
         catch (NumberFormatException nfe) {
@@ -645,7 +645,7 @@ public class GDBServer extends MonitorFactory {
      */
     public Monitor newMonitor(Simulator s) {
         // get port for this node
-        Integer port = (Integer)portMap.get(new Integer(s.getID()));
+        Integer port = (Integer)portMap.get(Integer.valueOf(s.getID()));
         if (port == null) {
             // no port given, install empty monitor
             return new EmptyMonitor();

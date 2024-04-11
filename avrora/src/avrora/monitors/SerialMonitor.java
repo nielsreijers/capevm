@@ -131,7 +131,7 @@ public class SerialMonitor extends MonitorFactory {
          */
         Monitor(Simulator s) {
             simulator = s;
-            Set<Connection> conns = portMap.get(new Integer(s.getID()));
+            Set<Connection> conns = portMap.get(Integer.valueOf(s.getID()));
             if ( conns != null ) {
                 for (Connection conn : conns) {
                     AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
@@ -215,7 +215,7 @@ public class SerialMonitor extends MonitorFactory {
     }
 
     private void addConnection(int nid, Connection ucon) {
-        Integer nidI = new Integer(nid);
+        Integer nidI = Integer.valueOf(nid);
         Set<Connection> set = portMap.get(nidI);
         if (set == null) {
             set = new HashSet<Connection>();

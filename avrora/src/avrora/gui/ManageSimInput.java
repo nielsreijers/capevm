@@ -170,9 +170,9 @@ public class ManageSimInput {
 
         //Set up the spinner
         numOfNodesSpinner = new SpinnerNumberModel();
-        numOfNodesSpinner.setValue(new Integer(1));
-        numOfNodesSpinner.setMinimum(new Integer(1));
-        numOfNodesSpinner.setStepSize(new Integer(1));
+        numOfNodesSpinner.setValue(Integer.valueOf(1));
+        numOfNodesSpinner.setMinimum(Integer.valueOf(1));
+        numOfNodesSpinner.setStepSize(Integer.valueOf(1));
         numOfNodesSpinner.addChangeListener(AvroraGui.instance);
 
         //Add the Update Button
@@ -304,7 +304,7 @@ public class ManageSimInput {
             outerShell.setLayout(new BorderLayout());
             //This spinner module allows the user to use up and down arrows to change seconds values
             SpinnerNumberModel theSpinner = new SpinnerNumberModel();
-            theSpinner.setValue(new Double(((Option.Double) theOption).get()));
+            theSpinner.setValue(Double.valueOf(((Option.Double) theOption).get()));
 
             JLabel spinnerTitle = new JLabel();
             spinnerTitle.setText(theOption.getName() + " ");

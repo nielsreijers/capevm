@@ -120,7 +120,7 @@ public class ManageTopology {
         while ( ni.hasNext() ) {
             Simulation.Node currentNode = ni.next();
             Vector<Comparable<?>> tempVector = new Vector<Comparable<?>>();
-            tempVector.add(new Integer(currentNode.id));
+            tempVector.add(Integer.valueOf(currentNode.id));
             tempVector.add(currentNode.getProgram().getName());
             StringBuffer mstrBuffer = new StringBuffer(100);
             boolean useComma = false;

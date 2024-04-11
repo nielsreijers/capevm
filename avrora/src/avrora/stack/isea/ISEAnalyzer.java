@@ -92,14 +92,14 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
         ISEState ors = getReturnSummary(retaddr);
         if ( ors == null ) {
             ors = rs.dup();
-            returnSummaries.put(new Integer(retaddr), ors);
+            returnSummaries.put(Integer.valueOf(retaddr), ors);
         } else {
             ors.merge(rs);
         }
     }
 
     public ISEState getReturnSummary(int retaddr) {
-        return (ISEState)returnSummaries.get(new Integer(retaddr));
+        return (ISEState)returnSummaries.get(Integer.valueOf(retaddr));
     }
 
     public void analyze() {

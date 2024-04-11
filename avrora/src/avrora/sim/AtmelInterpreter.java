@@ -330,9 +330,6 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      */
     protected AtmelInterpreter(Simulator simulator, Program p, AVRProperties pr) {
         super(simulator);
-        // this class and its methods are performance critical
-        // observed speedup with this call on Hotspot
-        Compiler.compileClass(getClass());
 
         state = new StateImpl();
 

@@ -141,24 +141,24 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
     }
 
     public static void addPin(HashMap<String, Integer> pinMap, int p, String n) {
-        pinMap.put(n, new Integer(p));
+        pinMap.put(n, Integer.valueOf(p));
     }
 
     public static void addPin(HashMap<String, Integer> pinMap, int p, String n1, String n2) {
-        Integer i = new Integer(p);
+        Integer i = Integer.valueOf(p);
         pinMap.put(n1, i);
         pinMap.put(n2, i);
     }
 
     public static void addPin(HashMap<String, Integer> pinMap, int p, String n1, String n2, String n3) {
-        Integer i = new Integer(p);
+        Integer i = Integer.valueOf(p);
         pinMap.put(n1, i);
         pinMap.put(n2, i);
         pinMap.put(n3, i);
     }
 
     public static void addPin(HashMap<String, Integer> pinMap, int p, String n1, String n2, String n3, String n4) {
-        Integer i = new Integer(p);
+        Integer i = Integer.valueOf(p);
         pinMap.put(n1, i);
         pinMap.put(n2, i);
         pinMap.put(n3, i);
@@ -166,7 +166,7 @@ public abstract class AtmelMicrocontroller extends DefaultMCU {
     }
 
     public static void addInterrupt(HashMap<String, Integer> iMap, String n, int i) {
-        iMap.put(n, new Integer(i));
+        iMap.put(n, Integer.valueOf(i));
     }
 
     /**
